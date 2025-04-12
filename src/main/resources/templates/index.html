@@ -10,7 +10,7 @@
 <div class="header">
     <div class="left">Simple Significance</div>
     <div class="right">
-        <a th:href="@{/(lang='en')}">EN</a> | <a th:href="@{/(lang='no')}">NO</a>
+        <a th:href="@{/(lang='en')}">EN</a> | <a th:href="@{/(lang='nb')}">NO</a>
         <span> | <a href="#">Login</a></span>
     </div>
 </div>
@@ -20,30 +20,52 @@
     <p th:text="#{app.tagline}">Upload your data. Choose a test. Understand your results.</p>
     <p th:text="#{app.description}">
         Simple Significance helps you perform basic statistical hypothesis tests—quickly, clearly, and with minimal
-        effort.
-        Whether you're a student, a researcher, or just curious about your data, this tool guides you through the
-        process of
-        comparing groups and interpreting results.
+        effort. Whether you're a student, a researcher, or just curious about your data, this tool guides you through
+        the process of comparing groups and interpreting results.
     </p>
 
-    <form action="/upload" method="post" enctype="multipart/form-data">
-        <label for="csvFile" th:text="#{form.label}">Please upload a CSV file with two columns:</label><br><br>
-        <input type="file" id="csvFile" name="csvFile" accept=".csv" required><br><br>
-        <button type="submit" th:text="#{form.button}">Upload and analyze</button>
-    </form>
-
-    <!-- Feedback from controller -->
-    <div th:if="${message}" class="feedback success">
-        <p th:text="${message}"></p>
+    <div class="detailsSection">
+        <details>
+            <summary th:text="#{help.hypothesis.title}">What is hypothesis testing?</summary>
+            <p th:text="#{help.hypothesis.description}"></p>
+        </details>
+        <details>
+            <summary th:text="#{help.tests.title}">Which statistical test should I choose?</summary>
+            <p th:utext="#{help.tests.description}"></p>
+        </details>
+        <details>
+            <summary th:text="#{help.csv.title}">How should the CSV file be formatted?</summary>
+            <p th:utext="#{help.csv.description}"></p>
+        </details>
     </div>
 
-    <div th:if="${error}" class="feedback error">
-        <p th:text="${error}"></p>
+    <div class="uploadsSection">
+        <form action="/upload" method="post" enctype="multipart/form-data">
+            <label for="csvFile" th:text="#{form.label}">Please upload a CSV file with two columns:</label><br><br>
+
+            <div class="custom-file-upload">
+                <input type="file" id="csvFile" name="csvFile" accept=".csv" required onchange="updateFileName(this)">
+                <label for="csvFile" th:text="#{form.chooseFile}">Choose file</label>
+                <span id="file-name" th:text="#{form.noFileChosen}" th:attr="data-default-text=#{form.noFileChosen}">No file chosen</span>
+            </div>
+
+            <button type="submit" th:text="#{form.button}">Upload and analyze</button>
+        </form>
+
+        <div th:if="${message}" class="feedback success">
+            <p th:text="${message}"></p>
+        </div>
+
+        <div th:if="${error}" class="feedback error">
+            <p th:text="${error}"></p>
+        </div>
     </div>
 
-    <div th:if="${project}" style="margin-top: 30px;">
+    <div id="projectSection" th:if="${project}" class="projectSection">
         <h2 th:text="#{project.parsedData}">Parsed project data</h2>
-        <p><strong th:text="#{project.title}">Project title:</strong> <span th:text="${project.projectTitle}">[projectTitle]</span>
+        <p>
+            <strong th:text="#{project.title}">Project title:</strong>
+            <span th:text="${project.projectTitle}">[projectTitle]</span>
         </p>
 
         <table>
@@ -54,34 +76,27 @@
             </thead>
             <tbody>
             <tr th:each="i : ${#numbers.sequence(0, maxRows - 1)}">
-                <td th:each="group : ${project.groupData.values()}" th:text="${i < group.size() ? group[i] : ''}"></td>
+                <td th:each="group : ${project.groupData.values()}"
+                    th:text="${i < group.size() ? group[i] : ''}"></td>
             </tr>
             </tbody>
         </table>
     </div>
-
-    <details>
-        <summary th:text="#{help.hypothesis.title}">What is hypothesis testing?</summary>
-        <p th:text="#{help.hypothesis.description}">
-            Hypothesis testing is a statistical method for making inferences or decisions about a population based on
-            sample data.
-        </p>
-    </details>
-
-    <details>
-        <summary th:text="#{help.csv.title}">How should the CSV file be formatted?</summary>
-        <p th:utext="#{help.csv.description}">
-            [CSV formatting guide goes here with line breaks, e.g., &lt;br&gt;]
-        </p>
-    </details>
-
-    <details>
-        <summary th:text="#{help.tests.title}">Which statistical test should I choose?</summary>
-        <p th:utext="#{help.tests.description}">
-            [Test explanation guide goes here with line breaks, e.g., &lt;br&gt;]
-        </p>
-    </details>
 </div>
+
+<script>
+    function updateFileName(input) {
+        const fileNameSpan = document.getElementById('file-name');
+        fileNameSpan.textContent = input.files.length > 0 ? input.files[0].name : fileNameSpan.dataset.defaultText;
+    }
+
+    window.onload = function () {
+        const projectSection = document.getElementById("projectSection");
+        if (projectSection) {
+            projectSection.scrollIntoView({ behavior: "smooth" });
+        }
+    }
+</script>
 
 </body>
 </html>
