@@ -76,10 +76,8 @@ public class AnalysisService {
 
         logger.debug("JB = {}, p-value = {}, skewness = {}, kurtosis = {}, n = {}", jb, pValue, skewness, kurtosis, n);
 
-        // Skewness > 1 or < -1, Kurtosis > 3 or < -3 -> not normal
-        boolean isNotNormal = Math.abs(skewness) > 1 || Math.abs(kurtosis) > 3;
-
-        if (pValue < 0.05 || isNotNormal) {
+        // Strengere kriterier for normalfordeling
+        if (Math.abs(skewness) > 1 || Math.abs(kurtosis) > 3 || pValue < 0.05) {
             logger.debug("Data is not normally distributed based on skewness, kurtosis, and p-value.");
             return false;
         }
