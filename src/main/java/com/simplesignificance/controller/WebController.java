@@ -30,8 +30,8 @@ public class WebController {
 
     @GetMapping("/")
     public String index(HttpServletRequest request) {
-        logger.info("Incoming GET / request with lang param: {}", request.getParameter("lang"));
         Locale locale = RequestContextUtils.getLocale(request);
+        logger.info("Incoming GET / request with lang param: {}", request.getParameter("lang"));
         logger.info("Current request locale: {}", locale);
         return "index";
     }
