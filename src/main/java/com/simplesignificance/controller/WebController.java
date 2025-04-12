@@ -7,8 +7,18 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
 @Controller
 public class WebController {
+
+    private static final Logger logger = LoggerFactory.getLogger(WebController.class);
+
 
     @GetMapping("/")
     public String index() {
@@ -23,6 +33,18 @@ public class WebController {
         }
 
         // todo: Call analysisService.parse(csvFile) here later
+        try (var reader = new BufferedReader(new InputStreamReader(csvFile.getInputStream()))) {
+            logger.info("=== Uploaded file contents ===");
+            String line;
+            while ((line = reader.readLine()) != null) {
+                logger.info(line);
+            }
+            logger.info("=== End of file ===");
+        } catch (IOException e) {
+            logger.error("Failed to read uploaded file", e);
+            model.addAttribute("error", "Failed to read the uploaded file.");
+            return "index";
+        }
 
         model.addAttribute("message", "File '" + csvFile.getOriginalFilename() + "' uploaded successfully.");
         return "index";
