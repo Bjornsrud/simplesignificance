@@ -78,7 +78,7 @@
                     <td th:text="${group}"></td>
                     <td th:text="${analysis.groupSizes[group]}"></td>
                     <td th:text="${#numbers.formatDecimal(analysis.variances[group], 1, 4)}"></td>
-                    <td th:text="${analysis.isNormal[group] ? 'Yes' : 'No'}"></td>
+                    <td th:text="${analysis.isNormal[group] != null and analysis.isNormal[group] ? 'Yes' : 'No'}"></td>
                 </tr>
                 </tbody>
             </table>
