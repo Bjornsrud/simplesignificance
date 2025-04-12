@@ -1,0 +1,25 @@
+table {
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+table, th, td {
+    border: 1px solid #ccc;
+}
+
+th, td {
+    padding: 8px 12px;
+    text-align: center;
+}
+
+h1, h2 {
+    margin-bottom: 10px;
+}
+
+form {
+    margin-bottom: 20px;
+}
+
+details {
+    margin-top: 30px;
+}
