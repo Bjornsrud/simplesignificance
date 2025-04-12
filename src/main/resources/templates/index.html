@@ -76,7 +76,7 @@
                 <tbody>
                 <tr th:each="group : ${analysis.groupSizes.keySet()}">
                     <td th:text="${group}"></td>
-                    <td th:text="${analysis.groupSizes[group]}"></td>
+                    <td th:text="${analysis.groupSizes.get(group)}"></td>
                     <td th:text="${#numbers.formatDecimal(analysis.variances.get(group), 1, 2)}"></td>
                     <td th:text="${analysis.isNormal[group] != null and analysis.isNormal[group] ? 'Yes' : 'No'}"></td>
                 </tr>
