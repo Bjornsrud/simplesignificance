@@ -1,15 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 
-    <property name="LOG_PATH" value="logs"/>
-    <property name="LOG_FILE" value="${LOG_PATH}/simplesignificance"/>
-
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_FILE}.log</file>
+        <file>logs/simplesignificance.log</file>
 
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_FILE}-%d{yyyy-MM-dd}.log</fileNamePattern>
-            <maxHistory>30</maxHistory> <!-- Behold siste 30 dager -->
+            <fileNamePattern>logs/simplesignificance-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory> <!-- Keep last 30 days -->
         </rollingPolicy>
 
         <encoder>
@@ -19,7 +16,7 @@
 
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{HH:mm:ss} %-5level %logger{36} - %msg%n</pattern>
+            <pattern>[%thread] %d{HH:mm:ss} %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
 
