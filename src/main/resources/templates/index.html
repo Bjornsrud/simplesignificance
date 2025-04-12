@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="https://www.thymeleaf.org" lang="EN">
+<html xmlns:th="https://www.thymeleaf.org" lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Simple Significance</title>
@@ -8,75 +8,80 @@
 <body>
 
 <div class="header">
-    <div class="left" th:text="#{app.title}">Simple Significance</div>
+    <div class="left">Simple Significance</div>
     <div class="right">
         <a href="?lang=en">EN</a> | <a href="?lang=no">NO</a>
         <span> | <a href="#">Login</a></span>
     </div>
 </div>
 
-<h1 th:text="#{app.title}">Simple Significance</h1>
-<p th:text="#{app.tagline}">Upload your data. Choose a test. Understand your results.</p>
-<p th:text="#{app.description}">
-    Simple Significance helps you perform basic statistical hypothesis tests—quickly, clearly, and with minimal effort.
-    Whether you're a student, a researcher, or just curious about your data, this tool guides you through the process of
-    comparing groups and interpreting results.
-</p>
-
-<form action="/upload" method="post" enctype="multipart/form-data">
-    <label for="csvFile" th:text="#{form.label}">Please upload a CSV file with two columns:</label><br><br>
-    <input type="file" id="csvFile" name="csvFile" accept=".csv" required><br><br>
-    <button type="submit" th:text="#{form.button}">Upload and analyze</button>
-</form>
-
-<!-- Feedback from controller -->
-<div th:if="${message}">
-    <p th:text="${message}" style="color: green;"></p>
-</div>
-
-<div th:if="${error}">
-    <p th:text="${error}" style="color: red;"></p>
-</div>
-
-<div th:if="${project}" style="margin-top: 30px;">
-    <h2 th:text="#{project.parsedData}">Parsed project data</h2>
-    <p><strong th:text="#{project.title}">Project title:</strong> <span th:text="${project.projectTitle}">[projectTitle]</span></p>
-
-    <table>
-        <thead>
-        <tr>
-            <th th:each="entry : ${project.groupData.entrySet()}" th:text="${entry.key}">Group name</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="i : ${#numbers.sequence(0, project.groupData.values().stream().mapToInt(T(java.util.List).size).max().orElse(0) - 1)}">
-            <td th:each="group : ${project.groupData.values()}" th:text="${i < group.size() ? group[i] : ''}"></td>
-        </tr>
-        </tbody>
-    </table>
-</div>
-
-<details>
-    <summary th:text="#{help.hypothesis.title}">What is hypothesis testing?</summary>
-    <p th:text="#{help.hypothesis.description}">
-        Hypothesis testing is a statistical method for making inferences or decisions about a population based on sample data.
-        You typically compare groups to determine if observed differences are statistically significant or likely due to chance.
+<div class="container">
+    <h1 th:text="#{app.title}">Simple Significance</h1>
+    <p th:text="#{app.tagline}">Upload your data. Choose a test. Understand your results.</p>
+    <p th:text="#{app.description}">
+        Simple Significance helps you perform basic statistical hypothesis tests—quickly, clearly, and with minimal
+        effort.
+        Whether you're a student, a researcher, or just curious about your data, this tool guides you through the
+        process of
+        comparing groups and interpreting results.
     </p>
-</details>
 
-<details>
-    <summary th:text="#{help.csv.title}">How should the CSV file be formatted?</summary>
-    <p th:utext="#{help.csv.description}">
-        [CSV formatting guide goes here with line breaks, e.g., &lt;br&gt;]
-    </p>
-</details>
+    <form action="/upload" method="post" enctype="multipart/form-data">
+        <label for="csvFile" th:text="#{form.label}">Please upload a CSV file with two columns:</label><br><br>
+        <input type="file" id="csvFile" name="csvFile" accept=".csv" required><br><br>
+        <button type="submit" th:text="#{form.button}">Upload and analyze</button>
+    </form>
 
-<details>
-    <summary th:text="#{help.tests.title}">Which statistical test should I choose?</summary>
-    <p th:utext="#{help.tests.description}">
-        [Test explanation guide goes here with line breaks, e.g., &lt;br&gt;]
-    </p>
-</details>
+    <!-- Feedback from controller -->
+    <div th:if="${message}" class="feedback success">
+        <p th:text="${message}"></p>
+    </div>
+
+    <div th:if="${error}" class="feedback error">
+        <p th:text="${error}"></p>
+    </div>
+
+    <div th:if="${project}" style="margin-top: 30px;">
+        <h2 th:text="#{project.parsedData}">Parsed project data</h2>
+        <p><strong th:text="#{project.title}">Project title:</strong> <span th:text="${project.projectTitle}">[projectTitle]</span>
+        </p>
+
+        <table>
+            <thead>
+            <tr>
+                <th th:each="entry : ${project.groupData.entrySet()}" th:text="${entry.key}">Group name</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="i : ${#numbers.sequence(0, project.groupData.values().stream().mapToInt(T(java.util.List).size).max().orElse(0) - 1)}">
+                <td th:each="group : ${project.groupData.values()}" th:text="${i < group.size() ? group[i] : ''}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <details>
+        <summary th:text="#{help.hypothesis.title}">What is hypothesis testing?</summary>
+        <p th:text="#{help.hypothesis.description}">
+            Hypothesis testing is a statistical method for making inferences or decisions about a population based on
+            sample data.
+        </p>
+    </details>
+
+    <details>
+        <summary th:text="#{help.csv.title}">How should the CSV file be formatted?</summary>
+        <p th:utext="#{help.csv.description}">
+            [CSV formatting guide goes here with line breaks, e.g., &lt;br&gt;]
+        </p>
+    </details>
+
+    <details>
+        <summary th:text="#{help.tests.title}">Which statistical test should I choose?</summary>
+        <p th:utext="#{help.tests.description}">
+            [Test explanation guide goes here with line breaks, e.g., &lt;br&gt;]
+        </p>
+    </details>
+</div>
 
 </body>
 </html>
