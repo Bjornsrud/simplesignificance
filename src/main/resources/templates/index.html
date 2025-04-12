@@ -78,7 +78,7 @@
                     <td th:text="${group}"></td>
                     <td th:text="${analysis.groupSizes.get(group)}"></td>
                     <td th:text="${#numbers.formatDecimal(analysis.variances.get(group), 1, 2)}"></td>
-                    <td th:text="${analysis.isNormal[group] != null and analysis.isNormal[group] ? 'Yes' : 'No'}"></td>
+                    <td th:text="${analysis.isNormal.get(group) != null and analysis.isNormal.get(group) ? 'Yes' : 'No'}"></td>
                 </tr>
                 </tbody>
             </table>
@@ -89,12 +89,19 @@
             </div>
 
             <h3 th:text="#{analysis.recommendations.title}">Recommended Tests</h3>
+            <div th:if="${analysis.recommendations.isEmpty()}" class="no-recommended-tests">
+                <p th:text="#{analysis.test.noRecommended}">No recommended tests based on the data.</p>
+            </div>
             <form action="/analyze#project-section" method="post">
                 <div class="test-options" style="display: flex; flex-direction: column; gap: 0.5rem;">
                     <label th:each="test : ${analysis.recommendations}" th:class="${test.recommended} ? 'recommended' : 'not-recommended'">
                         <input type="radio" name="selectedTestType" th:value="${test.testType}" th:checked="${test.recommended}">
                         <span th:text="#{${'testtype.' + test.testType.name()}}"></span>
                         <small th:text="#{${'testreason.' + test.testType.name()}}"></small>
+                        <span th:if="${!test.recommended}" class="not-recommended-note">
+                            <br>
+                            <i>(This test is not recommended based on the data.)</i>
+                        </span>
                     </label>
                 </div>
                 <button type="submit" th:text="#{form.startAnalysis}" style="margin-top: 1rem;"></button>
