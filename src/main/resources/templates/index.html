@@ -61,20 +61,46 @@
             <strong th:text="#{project.title}">Project title:</strong>
             <span th:text="${project.projectTitle}">[projectTitle]</span>
         </p>
-        <table>
-            <thead>
-            <tr>
-                <th th:each="entry : ${project.groupData.entrySet()}" th:text="${entry.key}">Group</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="i : ${#numbers.sequence(0, maxRows - 1)}">
-                <td th:each="group : ${project.groupData.values()}" th:text="${i < group.size() ? group[i] : ''}"></td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
 
+        <div th:if="${analysis}" class="analysisSection">
+            <h3 th:text="#{analysis.summary.title}">Data Summary</h3>
+            <table>
+                <thead>
+                <tr>
+                    <th th:text="#{analysis.group}">Group</th>
+                    <th th:text="#{analysis.size}">Size</th>
+                    <th th:text="#{analysis.variance}">Variance</th>
+                    <th th:text="#{analysis.normal}">Normal Distribution?</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="group : ${analysis.groupSizes.keySet()}">
+                    <td th:text="${group}"></td>
+                    <td th:text="${analysis.groupSizes[group]}"></td>
+                    <td th:text="${#numbers.formatDecimal(analysis.variances[group], 1, 4)}"></td>
+                    <td th:text="${analysis.isNormal[group] ? 'Yes' : 'No'}"></td>
+                </tr>
+                </tbody>
+            </table>
+
+            <div class="warnings">
+                <p th:if="${analysis.tooFewDataPoints}" class="warning" th:text="#{analysis.warning.tooFew}">Warning: Less than 15 data points per group – too few for reliable significance testing.</p>
+                <p th:if="${!analysis.tooFewDataPoints and analysis.lowPowerWarning}" class="warning" th:text="#{analysis.warning.lowPower}">Note: Fewer than 30 data points – statistical power may be limited.</p>
+            </div>
+
+            <h3 th:text="#{analysis.recommendations.title}">Recommended Tests</h3>
+            <form action="/analyze" method="post">
+                <div class="test-options">
+                    <label th:each="test : ${analysis.recommendations}" th:class="${test.recommended} ? 'recommended' : 'not-recommended'">
+                        <input type="radio" name="selectedTestType" th:value="${test.testType}" th:checked="${test.recommended}">
+                        <span th:text="${test.testType}"></span>
+                        <small th:text="${test.reason}"></small>
+                    </label>
+                </div>
+                <button type="submit" th:text="#{form.startAnalysis}">Start analysis</button>
+            </form>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -83,7 +109,6 @@
         fileNameSpan.textContent = input.files.length > 0 ? input.files[0].name : fileNameSpan.dataset.defaultText;
     }
 
-    // Optional: auto-scroll to project section if it's present
     window.addEventListener("load", function () {
         const hash = window.location.hash;
         if (hash === "#project-section") {
