@@ -77,15 +77,15 @@
                 <tr th:each="group : ${analysis.groupSizes.keySet()}">
                     <td th:text="${group}"></td>
                     <td th:text="${analysis.groupSizes[group]}"></td>
-                    <td th:text="${analysis.variances[group]}"></td>
+                    <td th:text="${#numbers.formatDecimal(analysis.variances.get(group), 1, 2)}"></td>
                     <td th:text="${analysis.isNormal[group] != null and analysis.isNormal[group] ? 'Yes' : 'No'}"></td>
                 </tr>
                 </tbody>
             </table>
 
             <div class="warnings">
-                <p th:if="${analysis.tooFewDataPoints}" class="warning" th:text="#{analysis.warning.tooFew}">Warning: Less than 15 data points per group – too few for reliable significance testing.</p>
-                <p th:if="${!analysis.tooFewDataPoints and analysis.lowPowerWarning}" class="warning" th:text="#{analysis.warning.lowPower}">Note: Fewer than 30 data points – statistical power may be limited.</p>
+                <p th:if="${analysis.tooFewDataPoints}" class="warning" th:text="#{analysis.warning.tooFew}"></p>
+                <p th:if="${!analysis.tooFewDataPoints and analysis.lowPowerWarning}" class="warning" th:text="#{analysis.warning.lowPower}"></p>
             </div>
 
             <h3 th:text="#{analysis.recommendations.title}">Recommended Tests</h3>
@@ -97,12 +97,12 @@
                         <small th:text="#{${'testreason.' + test.testType.name()}}"></small>
                     </label>
                 </div>
-                <button type="submit" th:text="#{form.startAnalysis}">Start analysis</button>
+                <button type="submit" th:text="#{form.startAnalysis}" style="margin-top: 1rem;"></button>
             </form>
         </div>
 
         <div th:if="${analysisResultSummary}" class="resultSection">
-            <h3>Analysis Result</h3>
+            <h3 th:text="#{analysis.result.title}">Analysis Result</h3>
             <p th:text="${analysisResultSummary}"></p>
         </div>
     </div>
