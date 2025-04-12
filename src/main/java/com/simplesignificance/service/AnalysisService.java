@@ -4,6 +4,7 @@ import com.simplesignificance.model.ProjectData;
 import com.simplesignificance.model.TestType;
 import com.simplesignificance.model.analysis.AnalysisResult;
 import com.simplesignificance.model.analysis.TestRecommendation;
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -30,11 +31,13 @@ public class AnalysisService {
             List<Double> values = entry.getValue();
 
             double variance = calculateVariance(values);
-            logger.debug("Group '{}': size = {}, variance = {}", group, values.size(), variance);
+            boolean normal = checkNormalDistribution(values);
+
+            logger.debug("Group '{}': size = {}, variance = {}, normal = {}", group, values.size(), variance, normal);
 
             groupSizes.put(group, values.size());
             variances.put(group, variance);
-            isNormal.put(group, checkNormalDistribution(values)); // Placeholder
+            isNormal.put(group, normal);
 
             if (values.size() < 15) {
                 tooFew = true;
@@ -55,8 +58,34 @@ public class AnalysisService {
     }
 
     private boolean checkNormalDistribution(List<Double> values) {
-        // TODO: Implement proper Shapiro-Wilk or similar test later
-        return values.size() >= 30; // Simple heuristic for now
+        if (values.size() < 5) {
+            logger.debug("Group too small for normality test (n={}), assuming not normal", values.size());
+            return false;
+        }
+
+        double[] data = values.stream().mapToDouble(Double::doubleValue).toArray();
+        DescriptiveStatistics stats = new DescriptiveStatistics(data);
+
+        double skewness = stats.getSkewness();
+        double kurtosis = stats.getKurtosis();
+        int n = (int) stats.getN();
+
+        double jb = (n / 6.0) * (Math.pow(skewness, 2) + Math.pow(kurtosis, 2) / 4);
+
+        // Tilnærmet p-verdi for JB (df = 2) ved hjelp av chi-squared fordeling:
+        // P(JB > 5.99) ≈ 0.05
+        double pValue = 1 - new org.apache.commons.math3.distribution.ChiSquaredDistribution(2).cumulativeProbability(jb);
+
+        logger.debug("JB = {}, p-value = {}, skewness = {}, kurtosis = {}, n = {}", jb, pValue, skewness, kurtosis, n);
+
+        return pValue >= 0.05;
+    }
+
+    private boolean checkEqualVariance(Map<String, Double> variances) {
+        if (variances.size() < 2) return true;
+        double max = Collections.max(variances.values());
+        double min = Collections.min(variances.values());
+        return (max / min) <= 2.0;
     }
 
     private List<TestRecommendation> recommendTests(Map<String, List<Double>> data,
@@ -73,16 +102,10 @@ public class AnalysisService {
             result.add(new TestRecommendation(TestType.WELCH_T_TEST, allNormal && !equalVariance, "Normal, unequal variances"));
             result.add(new TestRecommendation(TestType.MANN_WHITNEY, !allNormal, "Non-normal distribution"));
         } else if (groupCount > 2) {
-            result.add(new TestRecommendation(TestType.ANOVA, allNormal && equalVariance, "For 3+ groups with normal distribution and equal variance"));
+            boolean recommendAnova = allNormal && equalVariance;
+            result.add(new TestRecommendation(TestType.ANOVA, recommendAnova, "For 3+ groups with normal distribution and equal variance"));
         }
 
         return result;
-    }
-
-    private boolean checkEqualVariance(Map<String, Double> variances) {
-        if (variances.size() < 2) return true;
-        double max = Collections.max(variances.values());
-        double min = Collections.min(variances.values());
-        return (max / min) <= 2.0; // rule of thumb for equality
     }
 }
