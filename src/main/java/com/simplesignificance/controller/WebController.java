@@ -40,7 +40,7 @@ public class WebController {
         try {
             ProjectData project = parserService.parse(csvFile);
 
-            logger.info("=== Parsed project data ===");
+            logger.info("=== Parsed project data from file: {} ===", csvFile.getOriginalFilename());
             logger.info("Project title: {}", project.getProjectTitle());
 
             for (Map.Entry<String, List<Double>> entry : project.getGroupData().entrySet()) {
