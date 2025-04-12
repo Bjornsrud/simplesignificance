@@ -48,6 +48,8 @@ public class WebController {
             }
 
             model.addAttribute("message", "File '" + csvFile.getOriginalFilename() + "' uploaded successfully.");
+            model.addAttribute("project", project);
+
         } catch (IOException e) {
             logger.error("Failed to parse uploaded CSV file", e);
             model.addAttribute("error", "Failed to read the uploaded file.");
