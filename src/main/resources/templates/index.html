@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Simple Significance</title>
+    <link rel="stylesheet" type="text/css" href="/css/style.css">
 </head>
 <body>
 <h1> Welcome to Simple Significance</h1>
@@ -22,6 +23,25 @@
 <div th:if="${error}">
     <p th:text="${error}" style="color: red;"></p>
 </div>
+
+<div th:if="${project}" style="margin-top: 30px;">
+    <h2>Parsed project data</h2>
+    <p><strong>Project title:</strong> <span th:text="${project.projectTitle}">[projectTitle]</span></p>
+
+    <table border="1" cellpadding="5" cellspacing="0">
+        <thead>
+        <tr>
+            <th th:each="entry : ${project.groupData.entrySet()}" th:text="${entry.key}">Group name</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="i : ${#numbers.sequence(0, ${#lists.size(project.groupData.values().iterator().next()) - 1})}">
+            <td th:each="group : ${project.groupData.values()}" th:text="${i < group.size() ? group[i] : ''}"></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
 
 <details style="margin-top: 20px;">
     <summary>How should the CSV file be formatted?</summary>
@@ -103,8 +123,6 @@
 
     </p>
 </details>
-
-
 
 </body>
 </html>
