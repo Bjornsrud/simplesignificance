@@ -47,6 +47,14 @@ public class WebController {
                 logger.info("Group '{}': {}", entry.getKey(), entry.getValue());
             }
 
+            int maxSize = project.getGroupData()
+                    .values()
+                    .stream()
+                    .mapToInt(List::size)
+                    .max()
+                    .orElse(0);
+
+            model.addAttribute("maxRows", maxSize);
             model.addAttribute("message", "File '" + csvFile.getOriginalFilename() + "' uploaded successfully.");
             model.addAttribute("project", project);
 

@@ -10,7 +10,7 @@
 <div class="header">
     <div class="left">Simple Significance</div>
     <div class="right">
-        <a href="?lang=en">EN</a> | <a href="?lang=no">NO</a>
+        <a th:href="@{/ (lang='en')}">EN</a> | <a th:href="@{/ (lang='no')}">NO</a>
         <span> | <a href="#">Login</a></span>
     </div>
 </div>
@@ -53,7 +53,7 @@
             </tr>
             </thead>
             <tbody>
-            <tr th:each="i : ${#numbers.sequence(0, project.groupData.values().stream().mapToInt(T(java.util.List).size).max().orElse(0) - 1)}">
+            <tr th:each="i : ${#numbers.sequence(0, maxRows - 1)}">
                 <td th:each="group : ${project.groupData.values()}" th:text="${i < group.size() ? group[i] : ''}"></td>
             </tr>
             </tbody>
