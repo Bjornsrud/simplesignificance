@@ -8,11 +8,10 @@
 <body>
 
 <div class="header">
-    <div class="app-title" th:text="#{app.title}">Simple Significance</div>
-    <div class="nav-links">
-        <a href="?lang=en">EN</a> <a href="?lang=no">NO</a>
-        <a href="#" th:if="${#httpServletRequest.remoteUser == null}">Login</a>
-        <span th:if="${#httpServletRequest.remoteUser != null}" th:text="${#httpServletRequest.remoteUser}"></span>
+    <div class="left" th:text="#{app.title}">Simple Significance</div>
+    <div class="right">
+        <a href="?lang=en">EN</a> | <a href="?lang=no">NO</a>
+        <span> | <a href="#">Login</a></span>
     </div>
 </div>
 
