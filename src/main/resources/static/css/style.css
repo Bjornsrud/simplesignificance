@@ -17,20 +17,26 @@ body {
     align-items: center;
 }
 
-.header .logo {
+.header .left {
     font-size: 1.4em;
     font-weight: bold;
 }
 
-.header .nav-links a {
+.header .right a {
     color: white;
-    margin-left: 16px;
     text-decoration: none;
-    font-weight: 500;
+    margin-left: 10px;
 }
 
-.header .nav-links a:hover {
+.header .right a:hover {
     text-decoration: underline;
+}
+
+.header .right a:visited,
+.header .right a:focus,
+.header .right a:active {
+    color: white;
+    outline: none;
 }
 
 /* Content Container */
@@ -100,4 +106,9 @@ details {
     padding: 10px;
     background: #f1f1f1;
     border-radius: 5px;
+}
+
+details summary {
+    cursor: pointer;
+    font-weight: bold;
 }
