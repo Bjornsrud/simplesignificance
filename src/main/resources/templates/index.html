@@ -14,6 +14,15 @@
     <button type="submit">Upload and analyze</button>
 </form>
 
+<!-- Feedback from controller -->
+<div th:if="${message}">
+    <p th:text="${message}" style="color: green;"></p>
+</div>
+
+<div th:if="${error}">
+    <p th:text="${error}" style="color: red;"></p>
+</div>
+
 <details style="margin-top: 20px;">
     <summary>How should the CSV file be formatted?</summary>
     <p>
@@ -63,14 +72,39 @@
     </p>
 </details>
 
+<details style="margin-top: 20px;">
+    <summary><strong>Which statistical test should I choose?</strong></summary>
+    <p>
 
-<!-- Feedback from controller -->
-<div th:if="${message}">
-    <p th:text="${message}" style="color: green;"></p>
-</div>
+        <strong>T-Test</strong><br>
+        Use when comparing the means of two separate groups (e.g., control vs. experimental).<br>
+        Assumes normally distributed data and similar variance.<br><br>
 
-<div th:if="${error}">
-    <p th:text="${error}" style="color: red;"></p>
-</div>
+        <strong>Welch's T-Test</strong><br>
+        Like the regular T-Test, but allows for <em>unequal variances</em> between groups.<br>
+        Recommended if one group has much more variability than the other.<br><br>
+
+        <strong>Paired T-Test</strong><br>
+        Use when comparing two related sets of scores (e.g., before and after an intervention for the same individuals).<br>
+        Requires normal distribution of the differences.<br><br>
+
+        <strong>Mann-Whitney U Test</strong><br>
+        A non-parametric alternative to the T-Test.<br>
+        Use when your two groups are independent, but the data is not normally distributed or contains outliers.<br><br>
+
+        <strong>Wilcoxon Signed-Rank Test</strong><br>
+        A non-parametric alternative to the Paired T-Test.<br>
+        Use when comparing related scores that are not normally distributed.<br><br>
+
+        <strong>ANOVA</strong><br>
+        Use when comparing the means of <strong>three or more groups</strong>.<br>
+        Assumes normal distribution and equal variances.<br>
+        For two groups, consider using a T-Test <em>if the data is normally distributed</em>; otherwise, consider a non-parametric alternative like Mann-Whitney.<br>
+
+    </p>
+</details>
+
+
+
 </body>
 </html>
