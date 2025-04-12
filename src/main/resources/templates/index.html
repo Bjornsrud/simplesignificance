@@ -93,8 +93,8 @@
                 <div class="test-options" style="display: flex; flex-direction: column; gap: 0.5rem;">
                     <label th:each="test : ${analysis.recommendations}" th:class="${test.recommended} ? 'recommended' : 'not-recommended'">
                         <input type="radio" name="selectedTestType" th:value="${test.testType}" th:checked="${test.recommended}">
-                        <span th:text="#{'testtype.' + test.testType}"></span>
-                        <small th:text="#{'testreason.' + test.testType}"></small>
+                        <span th:text="#{${'testtype.' + test.testType.name()}}"></span>
+                        <small th:text="#{${'testreason.' + test.testType.name()}}"></small>
                     </label>
                 </div>
                 <button type="submit" th:text="#{form.startAnalysis}">Start analysis</button>
