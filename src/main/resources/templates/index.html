@@ -89,7 +89,7 @@
             </div>
 
             <h3 th:text="#{analysis.recommendations.title}">Recommended Tests</h3>
-            <form action="/analyze" method="post">
+            <form action="/analyze#project-section" method="post">
                 <div class="test-options">
                     <label th:each="test : ${analysis.recommendations}" th:class="${test.recommended} ? 'recommended' : 'not-recommended'">
                         <input type="radio" name="selectedTestType" th:value="${test.testType}" th:checked="${test.recommended}">
@@ -99,6 +99,11 @@
                 </div>
                 <button type="submit" th:text="#{form.startAnalysis}">Start analysis</button>
             </form>
+        </div>
+
+        <div th:if="${analysisResultSummary}" class="resultSection">
+            <h3>Analysis Result</h3>
+            <p th:text="${analysisResultSummary}"></p>
         </div>
     </div>
 </div>
