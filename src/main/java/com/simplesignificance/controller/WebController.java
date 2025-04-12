@@ -1,6 +1,7 @@
 package com.simplesignificance.controller;
 
 import com.simplesignificance.model.ProjectData;
+import com.simplesignificance.model.TestType;
 import com.simplesignificance.model.analysis.AnalysisResult;
 import com.simplesignificance.service.AnalysisService;
 import com.simplesignificance.service.CsvParserService;
@@ -10,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,6 +28,9 @@ public class WebController {
     private static final Logger logger = LoggerFactory.getLogger(WebController.class);
     private final CsvParserService parserService;
     private final AnalysisService analysisService;
+
+    private ProjectData lastUploadedProject;
+    private AnalysisResult lastAnalysisResult;
 
     public WebController(CsvParserService parserService, AnalysisService analysisService) {
         this.parserService = parserService;
@@ -66,6 +71,9 @@ public class WebController {
 
             AnalysisResult analysis = analysisService.analyze(project);
 
+            lastUploadedProject = project;
+            lastAnalysisResult = analysis;
+
             model.addAttribute("maxRows", maxSize);
             model.addAttribute("message", "File '" + csvFile.getOriginalFilename() + "' uploaded successfully.");
             model.addAttribute("project", project);
@@ -75,6 +83,25 @@ public class WebController {
             logger.error("Failed to parse uploaded CSV file", e);
             model.addAttribute("error", "Failed to read the uploaded file.");
         }
+
+        return "index";
+    }
+
+    @PostMapping("/analyze")
+    public String runAnalysis(@RequestParam("selectedTestType") TestType selectedTestType, Model model) {
+        if (lastUploadedProject == null || lastAnalysisResult == null) {
+            model.addAttribute("error", "No uploaded project available for analysis.");
+            return "index";
+        }
+
+        lastUploadedProject.setSelectedTestType(selectedTestType);
+
+        // TODO: Perform actual statistical test and generate result (to be implemented)
+        logger.info("Running analysis using test type: {}", selectedTestType);
+
+        model.addAttribute("project", lastUploadedProject);
+        model.addAttribute("analysis", lastAnalysisResult);
+        model.addAttribute("analysisResultSummary", "(Placeholder) Statistical result will be shown here.");
 
         return "index";
     }
