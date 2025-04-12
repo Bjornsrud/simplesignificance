@@ -70,15 +70,21 @@ public class AnalysisService {
         double kurtosis = stats.getKurtosis();
         int n = (int) stats.getN();
 
+        // Jarque-Bera statistic
         double jb = (n / 6.0) * (Math.pow(skewness, 2) + Math.pow(kurtosis, 2) / 4);
-
-        // Tilnærmet p-verdi for JB (df = 2) ved hjelp av chi-squared fordeling:
-        // P(JB > 5.99) ≈ 0.05
         double pValue = 1 - new org.apache.commons.math3.distribution.ChiSquaredDistribution(2).cumulativeProbability(jb);
 
         logger.debug("JB = {}, p-value = {}, skewness = {}, kurtosis = {}, n = {}", jb, pValue, skewness, kurtosis, n);
 
-        return pValue >= 0.05;
+        // Skewness > 1 or < -1, Kurtosis > 3 or < -3 -> not normal
+        boolean isNotNormal = Math.abs(skewness) > 1 || Math.abs(kurtosis) > 3;
+
+        if (pValue < 0.05 || isNotNormal) {
+            logger.debug("Data is not normally distributed based on skewness, kurtosis, and p-value.");
+            return false;
+        }
+
+        return true; // Normal if p > 0.05, skewness and kurtosis are within limits
     }
 
     private boolean checkEqualVariance(Map<String, Double> variances) {
