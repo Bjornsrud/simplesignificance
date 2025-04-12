@@ -4,12 +4,16 @@ import com.simplesignificance.model.ProjectData;
 import com.simplesignificance.model.TestType;
 import com.simplesignificance.model.analysis.AnalysisResult;
 import com.simplesignificance.model.analysis.TestRecommendation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 
 @Service
 public class AnalysisService {
+
+    private static final Logger logger = LoggerFactory.getLogger(AnalysisService.class);
 
     public AnalysisResult analyze(ProjectData project) {
         Map<String, List<Double>> groupData = project.getGroupData();
@@ -25,8 +29,11 @@ public class AnalysisService {
             String group = entry.getKey();
             List<Double> values = entry.getValue();
 
+            double variance = calculateVariance(values);
+            logger.debug("Group '{}': size = {}, variance = {}", group, values.size(), variance);
+
             groupSizes.put(group, values.size());
-            variances.put(group, calculateVariance(values));
+            variances.put(group, variance);
             isNormal.put(group, checkNormalDistribution(values)); // Placeholder
 
             if (values.size() < 15) {
