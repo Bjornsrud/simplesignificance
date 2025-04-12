@@ -19,7 +19,6 @@ public class WebController {
 
     private static final Logger logger = LoggerFactory.getLogger(WebController.class);
 
-
     @GetMapping("/")
     public String index() {
         return "index";

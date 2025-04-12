@@ -5,69 +5,72 @@
     <title>Simple Significance</title>
 </head>
 <body>
-    <h1> Welcome to Simple Significance</h1>
-    <p> A Simple way to do basic hypothesis testing</p>
+<h1> Welcome to Simple Significance</h1>
+<p> A Simple way to do basic hypothesis testing</p>
 
-    <form action="/upload" method="post" enctype="multipart/form-data">
-        <label for="csvFile">Please upload a CSV file with two columns:</label><br><br>
-        <input type="file" id="csvFile" name="csvFile" accept=".csv" required><br><br>
-        <button type="submit">Upload and analyze</button>
-    </form>
+<form action="/upload" method="post" enctype="multipart/form-data">
+    <label for="csvFile">Please upload a CSV file with two columns:</label><br><br>
+    <input type="file" id="csvFile" name="csvFile" accept=".csv" required><br><br>
+    <button type="submit">Upload and analyze</button>
+</form>
 
-    <details style="margin-top: 20px;">
-        <summary>How should the CSV file be formatted?</summary>
-        <p>
-            The file should contain two columns, one for each group (e.g. control group and experimental group).<br>
-            The first row <strong>may optionally contain a project title or description</strong>, in which case it should only have one cell.<br>
-            The second row can contain headers like <code>ControlGroup,ExperimentalGroup</code> (optional but recommended).<br>
-            Each subsequent row should contain numeric values. Blank cells are allowed and will be ignored.<br><br>
+<details style="margin-top: 20px;">
+    <summary>How should the CSV file be formatted?</summary>
+    <p>
+        The file should contain two columns, one for each group (e.g. control group and experimental group).<br>
+        The first row <strong>may optionally contain a project title or description</strong>, in which case it should
+        only have one cell.<br>
+        The second row can contain headers like <code>ControlGroup,ExperimentalGroup</code> (optional but
+        recommended).<br>
+        Each subsequent row should contain numeric values. Blank cells are allowed and will be ignored.<br><br>
 
-            <strong>Example 1: With project name and headers</strong><br>
-            <code>
-                Effect of mindfulness on stress levels<br>
-                Control,Experimental<br>
-                10,23<br>
-                11,1<br>
-                15,23<br>
-                ,25<br>
-                3,<br>
-                5,2
-            </code><br><br>
+        <strong>Example 1: With project name and headers</strong><br>
+        <code>
+            Effect of mindfulness on stress levels<br>
+            Control,Experimental<br>
+            10,23<br>
+            11,1<br>
+            15,23<br>
+            ,25<br>
+            3,<br>
+            5,2
+        </code><br><br>
 
-            <strong>Example 2: Just data and group names header</strong><br>
-            <code>
-                Control,Experimental<br>
-                10,23<br>
-                11,1<br>
-                15,23<br>
-                ,25<br>
-                3,<br>
-                5,2
-            </code><br><br>
+        <strong>Example 2: Just data and group names header</strong><br>
+        <code>
+            Control,Experimental<br>
+            10,23<br>
+            11,1<br>
+            15,23<br>
+            ,25<br>
+            3,<br>
+            5,2
+        </code><br><br>
 
-            <strong>Example 3: Just data, no headers</strong><br>
-            <code>
-                10,23<br>
-                11,1<br>
-                15,23<br>
-                ,25<br>
-                3,<br>
-                5,2
-            </code><br><br>
+        <strong>Example 3: Just data, no headers</strong><br>
+        <code>
+            10,23<br>
+            11,1<br>
+            15,23<br>
+            ,25<br>
+            3,<br>
+            5,2
+        </code><br><br>
 
-            You can create a file like this in Microsoft Excel or LibreOffice Calc, then choose “Save As...” and select “CSV (Comma delimited)” as the file type.<br>
-            Alternatively, you can create the .csv manually in a simple text editor.
-        </p>
-    </details>
+        You can create a file like this in Microsoft Excel or LibreOffice Calc, then choose “Save As...” and select “CSV
+        (Comma delimited)” as the file type.<br>
+        Alternatively, you can create the .csv manually in a simple text editor.
+    </p>
+</details>
 
 
-    <!-- Feedback from controller -->
-    <div th:if="${message}">
-        <p th:text="${message}" style="color: green;"></p>
-    </div>
+<!-- Feedback from controller -->
+<div th:if="${message}">
+    <p th:text="${message}" style="color: green;"></p>
+</div>
 
-    <div th:if="${error}">
-        <p th:text="${error}" style="color: red;"></p>
-    </div>
+<div th:if="${error}">
+    <p th:text="${error}" style="color: red;"></p>
+</div>
 </body>
 </html>
