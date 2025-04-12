@@ -1,6 +1,8 @@
 package com.simplesignificance.controller;
 
 import com.simplesignificance.model.ProjectData;
+import com.simplesignificance.model.analysis.AnalysisResult;
+import com.simplesignificance.service.AnalysisService;
 import com.simplesignificance.service.CsvParserService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
@@ -23,9 +25,11 @@ public class WebController {
 
     private static final Logger logger = LoggerFactory.getLogger(WebController.class);
     private final CsvParserService parserService;
+    private final AnalysisService analysisService;
 
-    public WebController(CsvParserService parserService) {
+    public WebController(CsvParserService parserService, AnalysisService analysisService) {
         this.parserService = parserService;
+        this.analysisService = analysisService;
     }
 
     @GetMapping("/")
@@ -35,6 +39,7 @@ public class WebController {
         logger.info("Current request locale: {}", locale);
         return "index";
     }
+
     @PostMapping("/upload")
     public String getInput(@RequestParam("csvFile") MultipartFile csvFile, Model model) {
         if (csvFile == null || csvFile.isEmpty()) {
@@ -59,9 +64,12 @@ public class WebController {
                     .max()
                     .orElse(0);
 
+            AnalysisResult analysis = analysisService.analyze(project);
+
             model.addAttribute("maxRows", maxSize);
             model.addAttribute("message", "File '" + csvFile.getOriginalFilename() + "' uploaded successfully.");
             model.addAttribute("project", project);
+            model.addAttribute("analysis", analysis);
 
         } catch (IOException e) {
             logger.error("Failed to parse uploaded CSV file", e);
