@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="https://www.thymeleaf.org" lang="en">
+<html xmlns:th="https://www.thymeleaf.org" th:lang="${#locale}">
 <head>
     <meta charset="UTF-8">
     <title>Simple Significance</title>
@@ -10,7 +10,7 @@
 <div class="header">
     <div class="left">Simple Significance</div>
     <div class="right">
-        <a th:href="@{/ (lang='en')}">EN</a> | <a th:href="@{/ (lang='no')}">NO</a>
+        <a th:href="@{/(lang='en')}">EN</a> | <a th:href="@{/(lang='no')}">NO</a>
         <span> | <a href="#">Login</a></span>
     </div>
 </div>
