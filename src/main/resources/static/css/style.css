@@ -161,6 +161,19 @@ button:hover {
 }
 
 /* ============================================================
+   Project details
+   ============================================================ */
+
+.projectSection {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    margin-bottom: 40px;
+}
+
+/* ============================================================
    Table
    ============================================================ */
 table {
@@ -177,3 +190,4 @@ th, td {
     padding: 8px 12px;
     text-align: center;
 }
+
