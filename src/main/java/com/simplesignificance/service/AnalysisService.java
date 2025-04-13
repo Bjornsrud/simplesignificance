@@ -5,6 +5,7 @@ import com.simplesignificance.model.TestType;
 import com.simplesignificance.model.analysis.InitialAnalysisResult;
 import com.simplesignificance.model.analysis.TestRecommendation;
 import com.simplesignificance.model.analysis.TestResultSummary;
+import org.apache.commons.math3.stat.StatUtils;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.apache.commons.math3.stat.inference.OneWayAnova;
 import org.apache.commons.math3.stat.inference.TTest;
@@ -28,6 +29,7 @@ public class AnalysisService {
         Map<String, List<Double>> groupData = data.getGroupData();
         Map<String, Integer> groupSizes = new HashMap<>();
         Map<String, Double> variances = new HashMap<>();
+        Map<String, Double> skewness = new HashMap<>();
         Map<String, Boolean> isNormal = new HashMap<>();
 
         boolean tooFewDataPoints = false;
@@ -43,6 +45,7 @@ public class AnalysisService {
             int n = values.size();
             groupSizes.put(groupName, n);
             variances.put(groupName, stats.getVariance());
+            skewness.put(groupName, stats.getSkewness());
 
             if (n < 15) {
                 tooFewDataPoints = true;
@@ -50,7 +53,6 @@ public class AnalysisService {
                 lowPowerWarning = true;
             }
 
-            // Heuristic normality check using skewness and kurtosis
             boolean normal = Math.abs(stats.getSkewness()) < 1.0 && Math.abs(stats.getKurtosis()) < 3.5;
             isNormal.put(groupName, normal);
         }
@@ -67,7 +69,6 @@ public class AnalysisService {
         List<TestRecommendation> recommendations = new ArrayList<>();
         int groupCount = groupData.size();
         boolean allNormal = isNormal.values().stream().allMatch(b -> b);
-        boolean equalSize = groupSizes.values().stream().distinct().count() == 1;
         boolean equalVariance = variances.values().stream().distinct().count() == 1;
 
         if (groupCount == 2) {
@@ -95,95 +96,116 @@ public class AnalysisService {
         TestType testType = data.getSelectedTestType();
 
         double pValue = -1.0;
-        boolean significantAt05 = false;
-        boolean significantAt01 = false;
+        double effectSize = 0.0;
+        Map<String, Double> skewness = new HashMap<>();
 
         try {
-            switch (testType) {
-                case T_TEST:
-                case WELCH_T_TEST:
-                case PAIRED_T_TEST:
-                case MANN_WHITNEY:
-                case WILCOXON:
-                    if (groupCount != 2) {
-                        logger.warn("Test {} is only valid for two groups, but {} groups were provided.", testType, groupCount);
-                        throw new IllegalArgumentException("Selected test requires exactly 2 groups");
-                    }
-                    break;
+            for (Map.Entry<String, List<Double>> entry : groupData.entrySet()) {
+                DescriptiveStatistics stats = new DescriptiveStatistics();
+                entry.getValue().forEach(stats::addValue);
+                skewness.put(entry.getKey(), stats.getSkewness());
             }
 
             switch (testType) {
-                case T_TEST:
-                    pValue = runTTest(groupData);
-                    break;
-                case WELCH_T_TEST:
-                    pValue = runWelchTTest(groupData);
-                    break;
-                case PAIRED_T_TEST:
-                    pValue = runPairedTTest(groupData);
-                    break;
-                case MANN_WHITNEY:
-                    pValue = runMannWhitneyTest(groupData);
-                    break;
-                case WILCOXON:
-                    pValue = runWilcoxonTest(groupData);
-                    break;
-                case ANOVA:
-                    pValue = runAnovaTest(groupData);
-                    break;
+                case T_TEST -> {
+                    List<List<Double>> groups = new ArrayList<>(groupData.values());
+                    pValue = runTTest(groups.get(0), groups.get(1));
+                    effectSize = computeCohensD(groups.get(0), groups.get(1));
+                }
+                case WELCH_T_TEST -> {
+                    List<List<Double>> groups = new ArrayList<>(groupData.values());
+                    pValue = runWelchTTest(groups.get(0), groups.get(1));
+                    effectSize = computeCohensD(groups.get(0), groups.get(1));
+                }
+                case PAIRED_T_TEST -> {
+                    List<List<Double>> groups = new ArrayList<>(groupData.values());
+                    pValue = runPairedTTest(groups.get(0), groups.get(1));
+                    effectSize = computeCohensD(groups.get(0), groups.get(1)); // approximate
+                }
+                case MANN_WHITNEY -> {
+                    List<List<Double>> groups = new ArrayList<>(groupData.values());
+                    pValue = runMannWhitneyTest(groups.get(0), groups.get(1));
+                    effectSize = computeCohensD(groups.get(0), groups.get(1)); // approx non-parametric
+                }
+                case WILCOXON -> {
+                    List<List<Double>> groups = new ArrayList<>(groupData.values());
+                    pValue = runWilcoxonTest(groups.get(0), groups.get(1));
+                    effectSize = computeCohensD(groups.get(0), groups.get(1)); // approx
+                }
+                case ANOVA -> {
+                    List<double[]> dataList = groupData.values().stream()
+                            .map(list -> list.stream().mapToDouble(Double::doubleValue).toArray())
+                            .collect(Collectors.toList());
+                    pValue = new OneWayAnova().anovaPValue(dataList);
+                    effectSize = computeEtaSquared(dataList);
+                }
             }
         } catch (Exception e) {
             logger.error("Error running statistical test", e);
         }
 
-        if (pValue > 0) {
-            significantAt05 = pValue < 0.05;
-            significantAt01 = pValue < 0.01;
+        return new TestResultSummary(
+                groupData,
+                analysis,
+                testType,
+                pValue,
+                pValue > 0 && pValue < 0.10,
+                pValue > 0 && pValue < 0.05,
+                pValue > 0 && pValue < 0.01,
+                pValue > 0 && pValue < 0.001,
+                effectSize,
+                skewness
+        );
+    }
+
+    private double runTTest(List<Double> g1, List<Double> g2) {
+        return new TTest().tTest(toArray(g1), toArray(g2));
+    }
+
+    private double runWelchTTest(List<Double> g1, List<Double> g2) {
+        return new TTest().tTest(toArray(g1), toArray(g2));
+    }
+
+    private double runPairedTTest(List<Double> g1, List<Double> g2) {
+        return new TTest().pairedTTest(toArray(g1), toArray(g2));
+    }
+
+    private double runMannWhitneyTest(List<Double> g1, List<Double> g2) {
+        return new MannWhitneyUTest().mannWhitneyUTest(toArray(g1), toArray(g2));
+    }
+
+    private double runWilcoxonTest(List<Double> g1, List<Double> g2) {
+        boolean exact = g1.size() <= 30;
+        return new WilcoxonSignedRankTest().wilcoxonSignedRankTest(toArray(g1), toArray(g2), exact);
+    }
+
+    private double computeCohensD(List<Double> g1, List<Double> g2) {
+        double mean1 = g1.stream().mapToDouble(Double::doubleValue).average().orElse(0);
+        double mean2 = g2.stream().mapToDouble(Double::doubleValue).average().orElse(0);
+        double var1 = StatUtils.variance(toArray(g1));
+        double var2 = StatUtils.variance(toArray(g2));
+        int n1 = g1.size();
+        int n2 = g2.size();
+        double pooledSD = Math.sqrt(((n1 - 1) * var1 + (n2 - 1) * var2) / (n1 + n2 - 2));
+        return pooledSD == 0 ? 0 : Math.abs(mean1 - mean2) / pooledSD;
+    }
+
+    private double computeEtaSquared(List<double[]> groups) {
+        double totalSS = 0;
+        double betweenSS = 0;
+        List<Double> all = groups.stream().flatMapToDouble(Arrays::stream).boxed().toList();
+        double grandMean = all.stream().mapToDouble(Double::doubleValue).average().orElse(0);
+        for (double[] group : groups) {
+            double groupMean = Arrays.stream(group).average().orElse(0);
+            betweenSS += group.length * Math.pow(groupMean - grandMean, 2);
+            for (double v : group) {
+                totalSS += Math.pow(v - grandMean, 2);
+            }
         }
-
-        return new TestResultSummary(groupData, analysis, testType, pValue, significantAt05, significantAt01);
+        return totalSS == 0 ? 0 : betweenSS / totalSS;
     }
 
-    private double runTTest(Map<String, List<Double>> groupData) {
-        Iterator<List<Double>> it = groupData.values().iterator();
-        double[] g1 = it.next().stream().mapToDouble(Double::doubleValue).toArray();
-        double[] g2 = it.next().stream().mapToDouble(Double::doubleValue).toArray();
-        return new TTest().tTest(g1, g2);
-    }
-
-    private double runWelchTTest(Map<String, List<Double>> groupData) {
-        Iterator<List<Double>> it = groupData.values().iterator();
-        double[] g1 = it.next().stream().mapToDouble(Double::doubleValue).toArray();
-        double[] g2 = it.next().stream().mapToDouble(Double::doubleValue).toArray();
-        return new TTest().tTest(g1, g2);
-    }
-
-    private double runPairedTTest(Map<String, List<Double>> groupData) {
-        Iterator<List<Double>> it = groupData.values().iterator();
-        double[] g1 = it.next().stream().mapToDouble(Double::doubleValue).toArray();
-        double[] g2 = it.next().stream().mapToDouble(Double::doubleValue).toArray();
-        return new TTest().pairedTTest(g1, g2);
-    }
-
-    private double runMannWhitneyTest(Map<String, List<Double>> groupData) {
-        Iterator<List<Double>> it = groupData.values().iterator();
-        double[] g1 = it.next().stream().mapToDouble(Double::doubleValue).toArray();
-        double[] g2 = it.next().stream().mapToDouble(Double::doubleValue).toArray();
-        return new MannWhitneyUTest().mannWhitneyUTest(g1, g2);
-    }
-
-    private double runWilcoxonTest(Map<String, List<Double>> groupData) {
-        Iterator<List<Double>> it = groupData.values().iterator();
-        double[] g1 = it.next().stream().mapToDouble(Double::doubleValue).toArray();
-        double[] g2 = it.next().stream().mapToDouble(Double::doubleValue).toArray();
-        boolean exact = g1.length <= 30;
-        return new WilcoxonSignedRankTest().wilcoxonSignedRankTest(g1, g2, exact);
-    }
-
-    private double runAnovaTest(Map<String, List<Double>> groupData) {
-        List<double[]> dataList = groupData.values().stream()
-                .map(list -> list.stream().mapToDouble(Double::doubleValue).toArray())
-                .collect(Collectors.toList());
-        return new OneWayAnova().anovaPValue(dataList);
+    private double[] toArray(List<Double> list) {
+        return list.stream().mapToDouble(Double::doubleValue).toArray();
     }
 }
