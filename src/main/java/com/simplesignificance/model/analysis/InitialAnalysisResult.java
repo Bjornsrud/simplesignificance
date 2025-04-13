@@ -3,7 +3,7 @@ package com.simplesignificance.model.analysis;
 import java.util.List;
 import java.util.Map;
 
-public class AnalysisResult {
+public class InitialAnalysisResult {
 
     private Map<String, Integer> groupSizes;
     private Map<String, Double> variances;
@@ -12,12 +12,12 @@ public class AnalysisResult {
     private boolean tooFewDataPoints;
     private boolean lowPowerWarning;
 
-    public AnalysisResult(Map<String, Integer> groupSizes,
-                          Map<String, Double> variances,
-                          Map<String, Boolean> isNormal,
-                          List<TestRecommendation> recommendations,
-                          boolean tooFewDataPoints,
-                          boolean lowPowerWarning) {
+    public InitialAnalysisResult(Map<String, Integer> groupSizes,
+                                 Map<String, Double> variances,
+                                 Map<String, Boolean> isNormal,
+                                 List<TestRecommendation> recommendations,
+                                 boolean tooFewDataPoints,
+                                 boolean lowPowerWarning) {
         this.groupSizes = groupSizes;
         this.variances = variances;
         this.isNormal = isNormal;
