@@ -37,6 +37,7 @@ public class WebController {
         this.analysisService = analysisService;
     }
 
+    // Initial GET mapping for loading the main page
     @GetMapping("/")
     public String index(HttpServletRequest request) {
         Locale locale = RequestContextUtils.getLocale(request);
@@ -45,6 +46,7 @@ public class WebController {
         return "index";
     }
 
+    // POST method for uploading CSV and performing initial analysis
     @PostMapping("/upload")
     public String getInput(@RequestParam("csvFile") MultipartFile csvFile, Model model) {
         if (csvFile == null || csvFile.isEmpty()) {
@@ -90,6 +92,7 @@ public class WebController {
         return "index";
     }
 
+    // POST method for running the initial analysis (normality check, variances)
     @PostMapping("/analyze")
     public String runAnalysis(@RequestParam("selectedTestType") TestType selectedTestType, Model model) {
         if (lastUploadedProject == null || lastInitialAnalysisResult == null) {
@@ -99,9 +102,7 @@ public class WebController {
 
         lastUploadedProject.setSelectedTestType(selectedTestType);
 
-        // TODO: Perform actual statistical test and generate result (to be implemented)
-        logger.info("Running analysis using test type: {}", selectedTestType);
-
+        // Perform initial analysis (normality check, variances, etc.)
         model.addAttribute("project", lastUploadedProject);
         model.addAttribute("analysis", lastInitialAnalysisResult);
         model.addAttribute("analysisResultSummary", "(Placeholder) Statistical result will be shown here.");
@@ -109,7 +110,8 @@ public class WebController {
         return "index";
     }
 
-    @PostMapping("/analyze")
+    // POST method for performing the significance test
+    @PostMapping("/analyze/significance")
     public String runSignificanceTest(@RequestParam("selectedTestType") TestType selectedTestType, Model model) {
         if (lastUploadedProject == null || lastInitialAnalysisResult == null) {
             model.addAttribute("error", "No uploaded project available for analysis.");
@@ -121,7 +123,7 @@ public class WebController {
         // Run the selected statistical test
         TestResultSummary resultSummary = analysisService.runTest(lastUploadedProject, lastInitialAnalysisResult);
 
-        // Display results
+        // Format the result summary to display p-value and significance
         String analysisResultSummary = String.format(
                 "p-value: %.4f, Significant at 0.05: %b, Significant at 0.01: %b",
                 resultSummary.getpValue(),
