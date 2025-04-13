@@ -2,7 +2,8 @@ package com.simplesignificance.controller;
 
 import com.simplesignificance.model.ProjectData;
 import com.simplesignificance.model.TestType;
-import com.simplesignificance.model.analysis.AnalysisResult;
+import com.simplesignificance.model.analysis.InitialAnalysisResult;
+import com.simplesignificance.model.analysis.TestResultSummary;
 import com.simplesignificance.service.AnalysisService;
 import com.simplesignificance.service.CsvParserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,7 +30,7 @@ public class WebController {
     private final AnalysisService analysisService;
 
     private ProjectData lastUploadedProject;
-    private AnalysisResult lastAnalysisResult;
+    private InitialAnalysisResult lastInitialAnalysisResult;
 
     public WebController(CsvParserService parserService, AnalysisService analysisService) {
         this.parserService = parserService;
@@ -69,13 +69,13 @@ public class WebController {
                     .max()
                     .orElse(0);
 
-            AnalysisResult analysis = analysisService.analyze(project);
+            InitialAnalysisResult analysis = analysisService.analyze(project);
 
             logger.debug("Available variance keys: {}", analysis.getVariances().keySet());
             logger.debug("Group sizes keys: {}", analysis.getGroupSizes().keySet());
 
             lastUploadedProject = project;
-            lastAnalysisResult = analysis;
+            lastInitialAnalysisResult = analysis;
 
             model.addAttribute("maxRows", maxSize);
             model.addAttribute("message", "File '" + csvFile.getOriginalFilename() + "' uploaded successfully.");
@@ -92,7 +92,7 @@ public class WebController {
 
     @PostMapping("/analyze")
     public String runAnalysis(@RequestParam("selectedTestType") TestType selectedTestType, Model model) {
-        if (lastUploadedProject == null || lastAnalysisResult == null) {
+        if (lastUploadedProject == null || lastInitialAnalysisResult == null) {
             model.addAttribute("error", "No uploaded project available for analysis.");
             return "index";
         }
@@ -103,8 +103,35 @@ public class WebController {
         logger.info("Running analysis using test type: {}", selectedTestType);
 
         model.addAttribute("project", lastUploadedProject);
-        model.addAttribute("analysis", lastAnalysisResult);
+        model.addAttribute("analysis", lastInitialAnalysisResult);
         model.addAttribute("analysisResultSummary", "(Placeholder) Statistical result will be shown here.");
+
+        return "index";
+    }
+
+    @PostMapping("/analyze")
+    public String runSignificanceTest(@RequestParam("selectedTestType") TestType selectedTestType, Model model) {
+        if (lastUploadedProject == null || lastInitialAnalysisResult == null) {
+            model.addAttribute("error", "No uploaded project available for analysis.");
+            return "index";
+        }
+
+        lastUploadedProject.setSelectedTestType(selectedTestType);
+
+        // Run the selected statistical test
+        TestResultSummary resultSummary = analysisService.runTest(lastUploadedProject, lastInitialAnalysisResult);
+
+        // Display results
+        String analysisResultSummary = String.format(
+                "p-value: %.4f, Significant at 0.05: %b, Significant at 0.01: %b",
+                resultSummary.getpValue(),
+                resultSummary.isSignificantAt05(),
+                resultSummary.isSignificantAt01()
+        );
+
+        model.addAttribute("project", lastUploadedProject);
+        model.addAttribute("analysis", lastInitialAnalysisResult);
+        model.addAttribute("analysisResultSummary", analysisResultSummary);
 
         return "index";
     }
