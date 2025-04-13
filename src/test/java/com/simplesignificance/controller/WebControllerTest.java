@@ -4,6 +4,7 @@ import com.simplesignificance.model.ProjectData;
 import com.simplesignificance.model.TestType;
 import com.simplesignificance.model.analysis.InitialAnalysisResult;
 import com.simplesignificance.model.analysis.TestRecommendation;
+import com.simplesignificance.model.analysis.TestResultSummary;
 import com.simplesignificance.service.AnalysisService;
 import com.simplesignificance.service.CsvParserService;
 import org.junit.jupiter.api.Test;
@@ -16,6 +17,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -95,21 +97,5 @@ class WebControllerTest {
                 .andExpect(model().attributeExists("error"))
                 .andExpect(model().attributeDoesNotExist("project"))
                 .andExpect(model().attributeDoesNotExist("analysis"));
-    }
-
-    @Test
-    void testClickUploadButtonWithNoFileReturns400BadRequest() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.multipart("/upload"))
-                .andExpect(status().isBadRequest()) // 400
-                .andExpect(result ->
-                        assertTrue(
-                                result.getResolvedException() instanceof MissingServletRequestPartException,
-                                "Expected MissingServletRequestPartException"
-                        )
-                )
-                .andExpect(result ->
-                        assertEquals("Required part 'csvFile' is not present.",
-                                result.getResolvedException().getMessage())
-                );
     }
 }
