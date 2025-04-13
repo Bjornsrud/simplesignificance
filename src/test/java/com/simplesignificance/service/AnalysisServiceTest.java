@@ -70,12 +70,46 @@ class AnalysisServiceTest {
         assertFalse(result.recommendations().isEmpty());  // Should still be able to run test
     }
 
+    @Test
+    void testAnalyzeRecommendsMannWhitney() {
+
+        // Data fails normality tests due to skewness = 0 and undefined kurtosis (flat)
+        List<Double> g1 = generateConstant(10.0, 20);
+        List<Double> g2 = generateConstant(12.0, 20);
+
+        Map<String, List<Double>> data = new HashMap<>();
+        data.put("Control", g1);
+        data.put("Treatment", g2);
+
+        ProjectData project = new ProjectData();
+        project.setProjectTitle("MannWhitney Recommended");
+        project.setGroupData(data);
+
+        InitialAnalysisResult result = analysisService.analyze(project);
+
+        boolean mannWhitneyRecommended = result.recommendations().stream()
+                .anyMatch(r -> r.testType() == TestType.MANN_WHITNEY && r.recommended());
+
+        assertTrue(mannWhitneyRecommended);
+    }
+
+
+
+
 
     private List<Double> generateSequence(double start, double end, int count) {
         List<Double> list = new ArrayList<>();
         double step = (end - start) / (count - 1);
         for (int i = 0; i < count; i++) {
             list.add(start + step * i);
+        }
+        return list;
+    }
+
+    private List<Double> generateConstant(double value, int count) {
+        List<Double> list = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            list.add(value);
         }
         return list;
     }
