@@ -60,63 +60,60 @@
     </div>
 
     <div th:if="${project}" id="project-section" class="projectSection">
-    <h2 th:text="#{project.parsedData}">Parsed project data</h2>
-    <p>
-        <strong th:text="#{project.title}">Project title:</strong>
-        <span th:text="${project.projectTitle}">[projectTitle]</span>
-    </p>
+        <h2 th:text="#{project.parsedData}">Parsed project data</h2>
+        <p>
+            <strong th:text="#{project.title}">Project title:</strong>
+            <span th:text="${project.projectTitle}">[projectTitle]</span>
+        </p>
 
-    <div th:if="${analysis}" class="analysisSection">
-        <h3 th:text="#{analysis.summary.title}">Data Summary</h3>
-        <table>
-            <thead>
-            <tr>
-                <th th:text="#{analysis.group}">Group</th>
-                <th th:text="#{analysis.size}">Size</th>
-                <th th:text="#{analysis.variance}">Variance</th>
-                <th th:text="#{analysis.normal}">Normal Distribution?</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="group : ${analysis.groupSizes.keySet()}">
-                <td th:text="${group}"></td>
-                <td th:text="${analysis.groupSizes.get(group)}"></td>
-                <td th:text="${#numbers.formatDecimal(analysis.variances.get(group), 1, 2)}"></td>
-                <td th:text="${analysis.isNormal.get(group) != null and analysis.isNormal.get(group) ? 'Yes' : 'No'}"></td>
-            </tr>
-            </tbody>
-        </table>
+        <div th:if="${analysis}" class="analysisSection">
+            <h3 th:text="#{analysis.summary.title}">Data Summary</h3>
+            <table>
+                <thead>
+                <tr>
+                    <th th:text="#{analysis.group}">Group</th>
+                    <th th:text="#{analysis.size}">Size</th>
+                    <th th:text="#{analysis.variance}">Variance</th>
+                    <th th:text="#{analysis.normal}">Normal Distribution?</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="group : ${analysis.groupSizes.keySet()}">
+                    <td th:text="${group}"></td>
+                    <td th:text="${analysis.groupSizes.get(group)}"></td>
+                    <td th:text="${#numbers.formatDecimal(analysis.variances.get(group), 1, 2)}"></td>
+                    <td th:text="${analysis.isNormal.get(group) != null and analysis.isNormal.get(group) ? 'Yes' : 'No'}"></td>
+                </tr>
+                </tbody>
+            </table>
 
-        <div class="warnings">
-            <p th:if="${analysis.tooFewDataPoints}" class="warning" th:text="#{analysis.warning.tooFew}"></p>
-            <p th:if="${!analysis.tooFewDataPoints and analysis.lowPowerWarning}" class="warning" th:text="#{analysis.warning.lowPower}"></p>
-        </div>
-
-        <h3 th:text="#{analysis.recommendations.title}">Recommended Tests</h3>
-
-        <!-- Show form if there are recommended tests -->
-        <form th:if="${!analysis.recommendations.?[recommended].isEmpty()}" action="/analyze/significance#project-section" method="post">
-            <div class="test-options" style="display: flex; flex-direction: column; gap: 0.5rem;">
-                <label th:each="test : ${analysis.recommendations}" th:class="${test.recommended} ? 'recommended' : 'not-recommended'">
-                    <input type="radio" name="selectedTestType" th:value="${test.testType}" th:checked="${test.recommended}">
-                    <span th:text="#{${'testtype.' + test.testType.name()}}"></span>
-                    <small th:text="#{${'testreason.' + test.testType.name()}}"></small>
-                    <span th:if="${!test.recommended}" class="not-recommended-note">
-                        <br>
-                        <i>(This test is not recommended based on the data.)</i>
-                    </span>
-                </label>
+            <div class="warnings">
+                <p th:if="${analysis.recommendations.isEmpty() and analysis.tooFewDataPoints}" class="warning" th:text="#{analysis.warning.invalid}"></p>
+                <p th:if="${!analysis.recommendations.isEmpty() and analysis.tooFewDataPoints}" class="warning" th:text="#{analysis.warning.tooFew}"></p>
+                <p th:if="${!analysis.tooFewDataPoints and analysis.lowPowerWarning}" class="warning" th:text="#{analysis.warning.lowPower}"></p>
             </div>
-            <button type="submit" th:text="#{form.startAnalysis}" style="margin-top: 1rem;"></button>
-        </form>
 
-        <!-- Show message if no recommended tests -->
-        <div th:if="${analysis.recommendations.?[recommended].isEmpty()}">
-            <p class="warning" th:text="#{analysis.test.noRecommended}"></p>
-            <p class="warning" th:text="#{analysis.test.noRecommended.warning}"></p>
+            <!-- Only show recommended tests section if recommended tests exist -->
+            <div th:if="${!analysis.recommendations.?[recommended].isEmpty()}">
+                <h3 th:text="#{analysis.recommendations.title}">Recommended Tests</h3>
+                <form action="/analyze/significance#project-section" method="post">
+                    <div class="test-options" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <label th:each="test : ${analysis.recommendations}" th:class="${test.recommended} ? 'recommended' : 'not-recommended'">
+                            <input type="radio" name="selectedTestType" th:value="${test.testType}" th:checked="${test.recommended}">
+                            <span th:text="#{${'testtype.' + test.testType.name()}}"></span>
+                            <small th:text="#{${'testreason.' + test.testType.name()}}"></small>
+                            <span th:if="${!test.recommended}" class="not-recommended-note">
+                            <br>
+                            <i>(This test is not recommended based on the data.)</i>
+                        </span>
+                        </label>
+                    </div>
+                    <button type="submit" th:text="#{form.startAnalysis}" style="margin-top: 1rem;"></button>
+                </form>
+            </div>
         </div>
     </div>
-</div>
+
 
 
     <!-- Significance Test Report Box (separate from projectSection) -->
