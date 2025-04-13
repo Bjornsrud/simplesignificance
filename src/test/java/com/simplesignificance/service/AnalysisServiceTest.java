@@ -166,6 +166,24 @@ class AnalysisServiceTest {
         assertNotNull(result.getTimestamp());
     }
 
+    @Test
+    void testAnalyzeWithThreeGroupsSuggestsANOVA() {
+        Map<String, List<Double>> groupData = new LinkedHashMap<>();
+        groupData.put("G1", generateJittered(10.0, 0.1, 20));
+        groupData.put("G2", generateJittered(12.0, 0.1, 20));
+        groupData.put("G3", generateJittered(11.0, 0.1, 20));
+
+        ProjectData project = new ProjectData();
+        project.setProjectTitle("ANOVA Test");
+        project.setGroupData(groupData);
+
+        InitialAnalysisResult result = analysisService.analyze(project);
+
+        boolean anovaRecommended = result.recommendations().stream()
+                .anyMatch(r -> r.testType() == TestType.ANOVA && r.recommended());
+
+        assertTrue(anovaRecommended);
+    }
 
     private List<Double> generateSequence(double start, double end, int count) {
         List<Double> list = new ArrayList<>();
