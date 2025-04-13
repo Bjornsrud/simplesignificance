@@ -33,6 +33,7 @@ public class AnalysisService {
 
         boolean tooFewDataPoints = false;
         boolean lowPowerWarning = false;
+        boolean invalidForTesting = false;
 
         for (Map.Entry<String, List<Double>> entry : groupData.entrySet()) {
             String groupName = entry.getKey();
@@ -46,7 +47,9 @@ public class AnalysisService {
             variances.put(groupName, stats.getVariance());
             skewness.put(groupName, stats.getSkewness());
 
-            if (n < 15) {
+            if (n < 5) {
+                invalidForTesting = true;  // Reject completely
+            } else if (n < 15) {
                 tooFewDataPoints = true;
             } else if (n < 30) {
                 lowPowerWarning = true;
@@ -56,7 +59,10 @@ public class AnalysisService {
             isNormal.put(groupName, normal);
         }
 
-        List<TestRecommendation> recommendations = recommendTests(groupData, variances, isNormal, groupSizes);
+        List<TestRecommendation> recommendations = invalidForTesting
+                ? List.of()
+                : recommendTests(groupData, variances, isNormal, groupSizes);
+
         return new InitialAnalysisResult(groupSizes, variances, isNormal, recommendations, tooFewDataPoints, lowPowerWarning);
     }
 
@@ -64,6 +70,7 @@ public class AnalysisService {
                                                     Map<String, Double> variances,
                                                     Map<String, Boolean> isNormal,
                                                     Map<String, Integer> groupSizes) {
+
         List<TestRecommendation> recommendations = new ArrayList<>();
         int groupCount = groupData.size();
         boolean allNormal = isNormal.values().stream().allMatch(Boolean::booleanValue);
