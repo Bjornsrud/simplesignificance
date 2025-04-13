@@ -185,6 +185,24 @@ class AnalysisServiceTest {
         assertTrue(anovaRecommended);
     }
 
+    @Test
+    void testAnalyzeReturnsNoRecommendationsForInvalidData() {
+        Map<String, List<Double>> data = new LinkedHashMap<>();
+        data.put("X", List.of(1.0));
+        data.put("Y", List.of(1.5));
+        data.put("Z", List.of(2.0));
+
+        ProjectData project = new ProjectData();
+        project.setProjectTitle("Not Enough");
+        project.setGroupData(data);
+
+        InitialAnalysisResult result = analysisService.analyze(project);
+
+        assertTrue(result.recommendations().isEmpty());
+        assertTrue(result.tooFewDataPoints());
+    }
+
+
     private List<Double> generateSequence(double start, double end, int count) {
         List<Double> list = new ArrayList<>();
         double step = (end - start) / (count - 1);
