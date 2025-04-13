@@ -202,7 +202,6 @@ class AnalysisServiceTest {
         assertTrue(result.tooFewDataPoints());
     }
 
-
     private List<Double> generateSequence(double start, double end, int count) {
         List<Double> list = new ArrayList<>();
         double step = (end - start) / (count - 1);
