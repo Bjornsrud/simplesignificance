@@ -93,25 +93,32 @@
             </div>
 
             <h3 th:text="#{analysis.recommendations.title}">Recommended Tests</h3>
-            <div th:if="${analysis.recommendations.isEmpty()}" class="no-recommended-tests">
-                <p th:text="#{analysis.test.noRecommended}">No recommended tests based on the data.</p>
-            </div>
-            <form action="/analyze/significance#project-section" method="post">
+
+            <!-- Test form only shown if any tests are recommended -->
+            <form th:if="${analysis.recommendations.?[recommended].size() > 0}" action="/analyze/significance#project-section" method="post">
                 <div class="test-options" style="display: flex; flex-direction: column; gap: 0.5rem;">
                     <label th:each="test : ${analysis.recommendations}" th:class="${test.recommended} ? 'recommended' : 'not-recommended'">
                         <input type="radio" name="selectedTestType" th:value="${test.testType}" th:checked="${test.recommended}">
                         <span th:text="#{${'testtype.' + test.testType.name()}}"></span>
                         <small th:text="#{${'testreason.' + test.testType.name()}}"></small>
                         <span th:if="${!test.recommended}" class="not-recommended-note">
-                            <br>
-                            <i>(This test is not recommended based on the data.)</i>
-                        </span>
+                        <br>
+                        <i>(This test is not recommended based on the data.)</i>
+                    </span>
                     </label>
                 </div>
                 <button type="submit" th:text="#{form.startAnalysis}" style="margin-top: 1rem;"></button>
             </form>
+
+            <!-- Fallback if no test is recommended -->
+            <div th:if="${analysis.recommendations.?[recommended].size() == 0}">
+                <p class="warning" th:text="#{analysis.test.noRecommended}"></p>
+                <p class="warning" th:text="#{analysis.test.noRecommended.warning}"></p>
+            </div>
         </div>
     </div>
+
+
     <!-- Significance Test Report Box (separate from projectSection) -->
     <div th:if="${testResult}" class="significanceTestSection">
         <h3 th:text="#{analysis.test.result.title}">Significance Test Report</h3>
@@ -176,6 +183,12 @@
             <span th:if="${!testResult.sigAt001 and !testResult.sigAt01 and !testResult.sigAt05 and testResult.sigAt10}" th:text="#{analysis.test.summary.sigAt10}"></span>
             <span th:if="${!testResult.sigAt10}" th:text="#{analysis.test.summary.notSig}"></span>
         </p>
+
+        <!-- Include any warnings from the initial analysis -->
+        <div class="warnings">
+            <p th:if="${testResult.analysis.tooFewDataPoints}" class="warning" th:text="#{analysis.warning.tooFew}"></p>
+            <p th:if="${!testResult.analysis.tooFewDataPoints and testResult.analysis.lowPowerWarning}" class="warning" th:text="#{analysis.warning.lowPower}"></p>
+        </div>
 
         <button onclick="window.print()" class="print-button" th:text="#{analysis.print}">Print Report</button>
     </div>
