@@ -72,8 +72,8 @@ public class WebController {
 
             InitialAnalysisResult analysis = analysisService.analyze(project);
 
-            logger.debug("Available variance keys: {}", analysis.getVariances().keySet());
-            logger.debug("Group sizes keys: {}", analysis.getGroupSizes().keySet());
+            logger.debug("Available variance keys: {}", analysis.variances().keySet());
+            logger.debug("Group sizes keys: {}", analysis.groupSizes().keySet());
 
             lastUploadedProject = project;
             lastInitialAnalysisResult = analysis;
