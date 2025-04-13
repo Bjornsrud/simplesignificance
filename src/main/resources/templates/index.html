@@ -75,6 +75,7 @@
                     <th th:text="#{analysis.size}">Size</th>
                     <th th:text="#{analysis.variance}">Variance</th>
                     <th th:text="#{analysis.normal}">Normal Distribution?</th>
+                    <th th:text="#{analysis.skewness}">Skewness</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -83,6 +84,7 @@
                     <td th:text="${analysis.groupSizes.get(group)}"></td>
                     <td th:text="${#numbers.formatDecimal(analysis.variances.get(group), 1, 2)}"></td>
                     <td th:text="${analysis.isNormal.get(group) != null and analysis.isNormal.get(group) ? 'Yes' : 'No'}"></td>
+                    <td th:text="${#numbers.formatDecimal(analysis.skewness.get(group), 1, 2)} ?: '—'"></td>
                 </tr>
                 </tbody>
             </table>
