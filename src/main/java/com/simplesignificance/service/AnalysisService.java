@@ -28,8 +28,8 @@ public class AnalysisService {
         Map<String, List<Double>> groupData = data.getGroupData();
         Map<String, Integer> groupSizes = new HashMap<>();
         Map<String, Double> variances = new HashMap<>();
-        Map<String, Double> skewness = new HashMap<>();
         Map<String, Boolean> isNormal = new HashMap<>();
+        Map<String, Double> skewness = new HashMap<>();
 
         boolean tooFewDataPoints = false;
         boolean lowPowerWarning = false;
@@ -49,13 +49,12 @@ public class AnalysisService {
 
             if (n < 5) {
                 invalidForTesting = true;
-                tooFewDataPoints = true; // Dette må settes eksplisitt
+                tooFewDataPoints = true;
             } else if (n < 15) {
                 tooFewDataPoints = true;
             } else if (n < 30) {
                 lowPowerWarning = true;
             }
-
 
             boolean normal = Math.abs(stats.getSkewness()) < 1.0 && Math.abs(stats.getKurtosis()) < 3.5;
             isNormal.put(groupName, normal);
@@ -65,7 +64,15 @@ public class AnalysisService {
                 ? List.of()
                 : recommendTests(groupData, variances, isNormal, groupSizes);
 
-        return new InitialAnalysisResult(groupSizes, variances, isNormal, recommendations, tooFewDataPoints, lowPowerWarning);
+        return new InitialAnalysisResult(
+                groupSizes,
+                variances,
+                isNormal,
+                recommendations,
+                tooFewDataPoints,
+                lowPowerWarning,
+                skewness
+        );
     }
 
     private List<TestRecommendation> recommendTests(Map<String, List<Double>> groupData,
