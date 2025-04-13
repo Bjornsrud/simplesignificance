@@ -6,5 +6,6 @@ public enum TestType {
     WILCOXON,
     PAIRED_T_TEST,
     WELCH_T_TEST,
-    ANOVA
+    ANOVA,
+    NONE
 }
