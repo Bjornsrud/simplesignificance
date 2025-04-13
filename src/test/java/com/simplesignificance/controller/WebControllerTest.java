@@ -84,7 +84,6 @@ class WebControllerTest {
                 "csvFile", "bad.csv", "text/csv", csvContent.getBytes()
         );
 
-        // Nå mocker vi en reell sjekket exception
         given(csvParserService.parse(file)).willThrow(new IOException("Invalid format"));
 
         mockMvc.perform(MockMvcRequestBuilders.multipart("/upload").file(file))
