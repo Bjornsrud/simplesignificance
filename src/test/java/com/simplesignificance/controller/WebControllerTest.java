@@ -14,6 +14,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -76,4 +77,21 @@ class WebControllerTest {
                 .andExpect(model().attributeExists("message"));
     }
 
+    @Test
+    void testUploadInvalidCsvShowsError() throws Exception {
+        String csvContent = "invalid data";
+        MockMultipartFile file = new MockMultipartFile(
+                "csvFile", "bad.csv", "text/csv", csvContent.getBytes()
+        );
+
+        // Nå mocker vi en reell sjekket exception
+        given(csvParserService.parse(file)).willThrow(new IOException("Invalid format"));
+
+        mockMvc.perform(MockMvcRequestBuilders.multipart("/upload").file(file))
+                .andExpect(status().isOk())
+                .andExpect(view().name("index"))
+                .andExpect(model().attributeExists("error"))
+                .andExpect(model().attributeDoesNotExist("project"))
+                .andExpect(model().attributeDoesNotExist("analysis"));
+    }
 }
