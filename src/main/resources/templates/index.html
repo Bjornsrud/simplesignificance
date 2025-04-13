@@ -129,6 +129,10 @@
                 <td th:text="${project.projectTitle}"></td>
             </tr>
             <tr>
+                <th th:text="#{analysis.test.timestamp}">Test Performed</th>
+                <td th:text="${#temporals.format(testResult.timestamp, 'yyyy-MM-dd HH:mm')}"></td>
+            </tr>
+            <tr>
                 <th th:text="#{analysis.test.type}">Test Type</th>
                 <td th:text="#{${'testtype.' + testResult.testType.name()}}"></td>
             </tr>
