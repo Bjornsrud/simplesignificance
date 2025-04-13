@@ -11,8 +11,13 @@
     <div class="left">Simple Significance BETA</div>
     <div class="right">
         <a th:href="@{/(lang='en')}">EN</a> | <a th:href="@{/(lang='nb')}">NO</a>
-        <span> | <a href="#">Login</a></span>
+        <span> | <a href="#" id="about-toggle" th:text="#{about.link}">About</a></span>
     </div>
+</div>
+
+<div id="about-dropdown" class="about-dropdown hidden">
+    <div class="about-content" th:utext="#{about.content}"></div>
+    <button class="about-close" onclick="closeAbout()">×</button>
 </div>
 
 <div class="container">
@@ -106,13 +111,76 @@
                 <button type="submit" th:text="#{form.startAnalysis}" style="margin-top: 1rem;"></button>
             </form>
         </div>
-
-        <div th:if="${analysisResultSummary}" class="significanceTestSection">
-            <h3 th:text="#{analysis.test.result.title}">Significance Test Result</h3>
-            <p th:text="${analysisResultSummary}"></p>
-        </div>
     </div>
-</div>
+    <!-- Significance Test Report Box (separate from projectSection) -->
+    <div th:if="${testResult}" class="significanceTestSection">
+        <h3 th:text="#{analysis.test.result.title}">Significance Test Report</h3>
+
+        <table class="report-table">
+            <tr>
+                <th th:text="#{project.title}">Project Title</th>
+                <td th:text="${project.projectTitle}"></td>
+            </tr>
+            <tr>
+                <th th:text="#{analysis.test.type}">Test Type</th>
+                <td th:text="#{${'testtype.' + testResult.testType.name()}}"></td>
+            </tr>
+            <tr>
+                <th th:text="#{analysis.test.effectSize}">Effect Size</th>
+                <td th:text="${#numbers.formatDecimal(testResult.effectSize, 1, 3)}"></td>
+            </tr>
+            <tr>
+                <th th:text="#{analysis.test.pvalue}">p-value</th>
+                <td th:text="${#numbers.formatDecimal(testResult.pValue, 1, 4)}"></td>
+            </tr>
+            <tr>
+                <th th:text="#{analysis.test.significance}">Significance Levels</th>
+                <td>
+                    <span class="badge" th:classappend="${testResult.sigAt10} ? 'badge-green' : 'badge-red'">p < 0.10</span>
+                    <span class="badge" th:classappend="${testResult.sigAt05} ? 'badge-green' : 'badge-red'">p < 0.05</span>
+                    <span class="badge" th:classappend="${testResult.sigAt01} ? 'badge-green' : 'badge-red'">p < 0.01</span>
+                    <span class="badge" th:classappend="${testResult.sigAt001} ? 'badge-green' : 'badge-red'">p < 0.001</span>
+                </td>
+            </tr>
+        </table>
+
+        <h4 th:text="#{analysis.group.details}">Group Details</h4>
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                <tr>
+                    <th th:text="#{analysis.group}">Group</th>
+                    <th th:text="#{analysis.size}">Size</th>
+                    <th th:text="#{analysis.variance}">Variance</th>
+                    <th th:text="#{analysis.normal}">Normal?</th>
+                    <th th:text="#{analysis.skewness}">Skewness</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="group : ${testResult.groupData.keySet()}">
+                    <td th:text="${group}"></td>
+                    <td th:text="${testResult.groupData.get(group).size()}"></td>
+                    <td th:text="${#numbers.formatDecimal(testResult.analysis.variances.get(group), 1, 2)}"></td>
+                    <td th:text="${testResult.analysis.isNormal.get(group) ? 'Yes' : 'No'}"></td>
+                    <td th:text="${#numbers.formatDecimal(testResult.skewness.get(group), 1, 3)}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h4 th:text="#{analysis.test.summary}">Summary</h4>
+        <p>
+            <span th:if="${testResult.pValue < 0.05}">
+                The observed difference is statistically significant (p &lt; 0.05), so we can reject the null hypothesis.
+            </span>
+            <span th:if="${testResult.pValue >= 0.05}">
+                The result is not statistically significant (p ≥ 0.05), so we cannot reject the null hypothesis.
+            </span>
+        </p>
+
+        <button onclick="window.print()" class="print-button" th:text="#{analysis.print}">Print Report</button>
+    </div>
+</div> <!-- end container -->
 
 <script>
     function updateFileName(input) {
@@ -123,13 +191,29 @@
     function openTab(evt, tabId) {
         const tabContents = document.querySelectorAll('.tab-content');
         tabContents.forEach(tc => tc.classList.remove('active'));
-
         const tabLinks = document.querySelectorAll('.tab-link');
         tabLinks.forEach(tl => tl.classList.remove('active'));
-
         document.getElementById(tabId).classList.add('active');
         evt.currentTarget.classList.add('active');
     }
+
+    function closeAbout() {
+        document.getElementById("about-dropdown").classList.add("hidden");
+    }
+
+    document.getElementById("about-toggle").addEventListener("click", function (e) {
+        e.preventDefault();
+        const box = document.getElementById("about-dropdown");
+        box.classList.toggle("hidden");
+    });
+
+    document.addEventListener("click", function (event) {
+        const dropdown = document.getElementById("about-dropdown");
+        const toggle = document.getElementById("about-toggle");
+        if (!dropdown.contains(event.target) && !toggle.contains(event.target)) {
+            dropdown.classList.add("hidden");
+        }
+    });
 
     window.addEventListener("load", function () {
         const hash = window.location.hash;
