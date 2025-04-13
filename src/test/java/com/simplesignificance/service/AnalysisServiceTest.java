@@ -93,7 +93,29 @@ class AnalysisServiceTest {
         assertTrue(mannWhitneyRecommended);
     }
 
+    @Test
+    void testAnalyzeRecommendsTTestWhenVarianceEqual() {
+        // Identical spread, shifted mean
+        List<Double> g1 = Arrays.asList(10.0, 10.5, 9.5, 10.2, 10.1, 10.4, 9.9, 10.3, 10.6, 10.0,
+                10.0, 10.5, 9.5, 10.2, 10.1, 10.4, 9.9, 10.3, 10.6, 10.0);
 
+        List<Double> g2 = g1.stream().map(v -> v + 2.0).toList(); // same variance, mean shifted
+
+        Map<String, List<Double>> data = new HashMap<>();
+        data.put("Group A", g1);
+        data.put("Group B", g2);
+
+        ProjectData project = new ProjectData();
+        project.setProjectTitle("Equal Variance T-test");
+        project.setGroupData(data);
+
+        InitialAnalysisResult result = analysisService.analyze(project);
+
+        boolean tTestRecommended = result.recommendations().stream()
+                .anyMatch(r -> r.testType() == TestType.T_TEST && r.recommended());
+
+        assertTrue(tTestRecommended);
+    }
 
 
 
