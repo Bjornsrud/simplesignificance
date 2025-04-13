@@ -13,11 +13,14 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -92,5 +95,21 @@ class WebControllerTest {
                 .andExpect(model().attributeExists("error"))
                 .andExpect(model().attributeDoesNotExist("project"))
                 .andExpect(model().attributeDoesNotExist("analysis"));
+    }
+
+    @Test
+    void testClickUploadButtonWithNoFileReturns400BadRequest() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.multipart("/upload"))
+                .andExpect(status().isBadRequest()) // 400
+                .andExpect(result ->
+                        assertTrue(
+                                result.getResolvedException() instanceof MissingServletRequestPartException,
+                                "Expected MissingServletRequestPartException"
+                        )
+                )
+                .andExpect(result ->
+                        assertEquals("Required part 'csvFile' is not present.",
+                                result.getResolvedException().getMessage())
+                );
     }
 }
