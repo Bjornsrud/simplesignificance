@@ -2,114 +2,186 @@ package com.simplesignificance.service;
 
 import com.simplesignificance.model.ProjectData;
 import com.simplesignificance.model.TestType;
-import com.simplesignificance.model.analysis.AnalysisResult;
+import com.simplesignificance.model.analysis.InitialAnalysisResult;
 import com.simplesignificance.model.analysis.TestRecommendation;
+import com.simplesignificance.model.analysis.TestResultSummary;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+import org.apache.commons.math3.stat.inference.OneWayAnova;
+import org.apache.commons.math3.stat.inference.TTest;
+import org.apache.commons.math3.stat.inference.MannWhitneyUTest;
+import org.apache.commons.math3.stat.inference.WilcoxonSignedRankTest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
-@Service
 public class AnalysisService {
 
     private static final Logger logger = LoggerFactory.getLogger(AnalysisService.class);
 
-    public AnalysisResult analyze(ProjectData project) {
-        Map<String, List<Double>> groupData = project.getGroupData();
+    public AnalysisService() {}
 
-        Map<String, Integer> groupSizes = new LinkedHashMap<>();
-        Map<String, Double> variances = new LinkedHashMap<>();
-        Map<String, Boolean> isNormal = new LinkedHashMap<>();
+    public InitialAnalysisResult analyze(ProjectData data) {
+        Map<String, List<Double>> groupData = data.getGroupData();
+        Map<String, Integer> groupSizes = new HashMap<>();
+        Map<String, Double> variances = new HashMap<>();
+        Map<String, Boolean> isNormal = new HashMap<>();
 
-        boolean tooFew = false;
-        boolean lowPower = false;
+        boolean tooFewDataPoints = false;
+        boolean lowPowerWarning = false;
 
         for (Map.Entry<String, List<Double>> entry : groupData.entrySet()) {
-            String group = entry.getKey();
+            String groupName = entry.getKey();
             List<Double> values = entry.getValue();
 
-            double variance = calculateVariance(values);
-            boolean normal = checkNormalDistribution(values);
+            DescriptiveStatistics stats = new DescriptiveStatistics();
+            values.forEach(stats::addValue);
 
-            logger.debug("Group '{}': size = {}, variance = {}, normal = {}", group, values.size(), variance, normal);
+            int n = values.size();
+            groupSizes.put(groupName, n);
+            variances.put(groupName, stats.getVariance());
 
-            groupSizes.put(group, values.size());
-            variances.put(group, variance);
-            isNormal.put(group, normal);
+            if (n < 15) {
+                tooFewDataPoints = true;
+            } else if (n < 30) {
+                lowPowerWarning = true;
+            }
 
-            if (values.size() < 15) {
-                tooFew = true;
-            } else if (values.size() < 30) {
-                lowPower = true;
+            // Heuristic normality check using skewness and kurtosis
+            boolean normal = Math.abs(stats.getSkewness()) < 1.0 && Math.abs(stats.getKurtosis()) < 3.5;
+            isNormal.put(groupName, normal);
+        }
+
+        List<TestRecommendation> recommendations = recommendTests(groupData, variances, isNormal, groupSizes);
+
+        return new InitialAnalysisResult(groupSizes, variances, isNormal, recommendations, tooFewDataPoints, lowPowerWarning);
+    }
+
+    private List<TestRecommendation> recommendTests(Map<String, List<Double>> groupData,
+                                                    Map<String, Double> variances,
+                                                    Map<String, Boolean> isNormal,
+                                                    Map<String, Integer> groupSizes) {
+        List<TestRecommendation> recommendations = new ArrayList<>();
+        int groupCount = groupData.size();
+        boolean allNormal = isNormal.values().stream().allMatch(b -> b);
+        boolean equalSize = groupSizes.values().stream().distinct().count() == 1;
+        boolean equalVariance = variances.values().stream().distinct().count() == 1;
+
+        if (groupCount == 2) {
+            if (allNormal && equalVariance) {
+                recommendations.add(new TestRecommendation(TestType.T_TEST, true, "Groups appear normal and variances equal."));
+            } else if (allNormal) {
+                recommendations.add(new TestRecommendation(TestType.WELCH_T_TEST, true, "Groups normal, variances unequal."));
+            } else {
+                recommendations.add(new TestRecommendation(TestType.MANN_WHITNEY, true, "Groups non-normal, Mann-Whitney suggested."));
+            }
+        } else if (groupCount > 2) {
+            if (allNormal && equalVariance) {
+                recommendations.add(new TestRecommendation(TestType.ANOVA, true, "More than two groups, normal and equal variances."));
+            } else {
+                recommendations.add(new TestRecommendation(TestType.NONE, true, "Non-normal or unequal variances in >2 groups."));
             }
         }
 
-        List<TestRecommendation> recommendations = recommendTests(groupData, isNormal, variances);
-
-        return new AnalysisResult(groupSizes, variances, isNormal, recommendations, tooFew, lowPower);
+        return recommendations;
     }
 
-    private double calculateVariance(List<Double> values) {
-        if (values.isEmpty()) return 0.0;
-        double mean = values.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
-        return values.stream().mapToDouble(v -> Math.pow(v - mean, 2)).average().orElse(0.0);
-    }
+    public TestResultSummary runTest(ProjectData data, InitialAnalysisResult analysis) {
+        Map<String, List<Double>> groupData = data.getGroupData();
+        int groupCount = groupData.size();
+        TestType testType = data.getSelectedTestType();
 
-    private boolean checkNormalDistribution(List<Double> values) {
-        if (values.size() < 5) {
-            logger.debug("Group too small for normality test (n={}), assuming not normal", values.size());
-            return false;
+        double pValue = -1.0;
+        boolean significantAt05 = false;
+        boolean significantAt01 = false;
+
+        try {
+            switch (testType) {
+                case T_TEST:
+                case WELCH_T_TEST:
+                case PAIRED_T_TEST:
+                case MANN_WHITNEY:
+                case WILCOXON:
+                    if (groupCount != 2) {
+                        logger.warn("Test {} is only valid for two groups, but {} groups were provided.", testType, groupCount);
+                        throw new IllegalArgumentException("Selected test requires exactly 2 groups");
+                    }
+                    break;
+            }
+
+            switch (testType) {
+                case T_TEST:
+                    pValue = runTTest(groupData);
+                    break;
+                case WELCH_T_TEST:
+                    pValue = runWelchTTest(groupData);
+                    break;
+                case PAIRED_T_TEST:
+                    pValue = runPairedTTest(groupData);
+                    break;
+                case MANN_WHITNEY:
+                    pValue = runMannWhitneyTest(groupData);
+                    break;
+                case WILCOXON:
+                    pValue = runWilcoxonTest(groupData);
+                    break;
+                case ANOVA:
+                    pValue = runAnovaTest(groupData);
+                    break;
+            }
+        } catch (Exception e) {
+            logger.error("Error running statistical test", e);
         }
 
-        double[] data = values.stream().mapToDouble(Double::doubleValue).toArray();
-        DescriptiveStatistics stats = new DescriptiveStatistics(data);
-
-        double skewness = stats.getSkewness();
-        double kurtosis = stats.getKurtosis();
-        int n = (int) stats.getN();
-
-        // Jarque-Bera statistic
-        double jb = (n / 6.0) * (Math.pow(skewness, 2) + Math.pow(kurtosis, 2) / 4);
-        double pValue = 1 - new org.apache.commons.math3.distribution.ChiSquaredDistribution(2).cumulativeProbability(jb);
-
-        logger.debug("JB = {}, p-value = {}, skewness = {}, kurtosis = {}, n = {}", jb, pValue, skewness, kurtosis, n);
-
-        // Strengere kriterier for normalfordeling
-        if (Math.abs(skewness) > 1 || Math.abs(kurtosis) > 3 || pValue < 0.05) {
-            logger.debug("Data is not normally distributed based on skewness, kurtosis, and p-value.");
-            return false;
+        if (pValue > 0) {
+            significantAt05 = pValue < 0.05;
+            significantAt01 = pValue < 0.01;
         }
 
-        return true; // Normal if p > 0.05, skewness and kurtosis are within limits
+        return new TestResultSummary(groupData, analysis, testType, pValue, significantAt05, significantAt01);
     }
 
-    private boolean checkEqualVariance(Map<String, Double> variances) {
-        if (variances.size() < 2) return true;
-        double max = Collections.max(variances.values());
-        double min = Collections.min(variances.values());
-        return (max / min) <= 2.0;
+    private double runTTest(Map<String, List<Double>> groupData) {
+        Iterator<List<Double>> it = groupData.values().iterator();
+        double[] g1 = it.next().stream().mapToDouble(Double::doubleValue).toArray();
+        double[] g2 = it.next().stream().mapToDouble(Double::doubleValue).toArray();
+        return new TTest().tTest(g1, g2);
     }
 
-    private List<TestRecommendation> recommendTests(Map<String, List<Double>> data,
-                                                    Map<String, Boolean> isNormal,
-                                                    Map<String, Double> variances) {
-        List<TestRecommendation> result = new ArrayList<>();
-        int groupCount = data.size();
+    private double runWelchTTest(Map<String, List<Double>> groupData) {
+        Iterator<List<Double>> it = groupData.values().iterator();
+        double[] g1 = it.next().stream().mapToDouble(Double::doubleValue).toArray();
+        double[] g2 = it.next().stream().mapToDouble(Double::doubleValue).toArray();
+        return new TTest().tTest(g1, g2);
+    }
 
-        boolean allNormal = isNormal.values().stream().allMatch(Boolean::booleanValue);
-        boolean equalVariance = checkEqualVariance(variances);
+    private double runPairedTTest(Map<String, List<Double>> groupData) {
+        Iterator<List<Double>> it = groupData.values().iterator();
+        double[] g1 = it.next().stream().mapToDouble(Double::doubleValue).toArray();
+        double[] g2 = it.next().stream().mapToDouble(Double::doubleValue).toArray();
+        return new TTest().pairedTTest(g1, g2);
+    }
 
-        if (groupCount == 2) {
-            result.add(new TestRecommendation(TestType.T_TEST, allNormal && equalVariance, "For normally distributed data with equal variance"));
-            result.add(new TestRecommendation(TestType.WELCH_T_TEST, allNormal && !equalVariance, "Normal, unequal variances"));
-            result.add(new TestRecommendation(TestType.MANN_WHITNEY, !allNormal, "Non-normal distribution"));
-        } else if (groupCount > 2) {
-            boolean recommendAnova = allNormal && equalVariance;
-            result.add(new TestRecommendation(TestType.ANOVA, recommendAnova, "For 3+ groups with normal distribution and equal variance"));
-        }
+    private double runMannWhitneyTest(Map<String, List<Double>> groupData) {
+        Iterator<List<Double>> it = groupData.values().iterator();
+        double[] g1 = it.next().stream().mapToDouble(Double::doubleValue).toArray();
+        double[] g2 = it.next().stream().mapToDouble(Double::doubleValue).toArray();
+        return new MannWhitneyUTest().mannWhitneyUTest(g1, g2);
+    }
 
-        return result;
+    private double runWilcoxonTest(Map<String, List<Double>> groupData) {
+        Iterator<List<Double>> it = groupData.values().iterator();
+        double[] g1 = it.next().stream().mapToDouble(Double::doubleValue).toArray();
+        double[] g2 = it.next().stream().mapToDouble(Double::doubleValue).toArray();
+        boolean exact = g1.length <= 30;
+        return new WilcoxonSignedRankTest().wilcoxonSignedRankTest(g1, g2, exact);
+    }
+
+    private double runAnovaTest(Map<String, List<Double>> groupData) {
+        List<double[]> dataList = groupData.values().stream()
+                .map(list -> list.stream().mapToDouble(Double::doubleValue).toArray())
+                .collect(Collectors.toList());
+        return new OneWayAnova().anovaPValue(dataList);
     }
 }
