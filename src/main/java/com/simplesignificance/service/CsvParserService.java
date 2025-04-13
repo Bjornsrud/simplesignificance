@@ -16,7 +16,7 @@ public class CsvParserService {
         ProjectData project = new ProjectData();
         Map<String, List<Double>> groupData = new LinkedHashMap<>();
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) { // Try-with-resources
             String line;
             int lineNumber = 0;
             String[] headers = null;
