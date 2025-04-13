@@ -31,13 +31,13 @@ public class WebController {
 
     private ProjectData lastUploadedProject;
     private InitialAnalysisResult lastInitialAnalysisResult;
+    private TestResultSummary lastTestResult;
 
     public WebController(CsvParserService parserService, AnalysisService analysisService) {
         this.parserService = parserService;
         this.analysisService = analysisService;
     }
 
-    // Initial GET mapping for loading the main page
     @GetMapping("/")
     public String index(HttpServletRequest request) {
         Locale locale = RequestContextUtils.getLocale(request);
@@ -46,7 +46,6 @@ public class WebController {
         return "index";
     }
 
-    // POST method for uploading CSV and performing initial analysis
     @PostMapping("/upload")
     public String getInput(@RequestParam("csvFile") MultipartFile csvFile, Model model) {
         if (csvFile == null || csvFile.isEmpty()) {
@@ -78,6 +77,7 @@ public class WebController {
 
             lastUploadedProject = project;
             lastInitialAnalysisResult = analysis;
+            lastTestResult = null;
 
             model.addAttribute("maxRows", maxSize);
             model.addAttribute("message", "File '" + csvFile.getOriginalFilename() + "' uploaded successfully.");
@@ -92,7 +92,6 @@ public class WebController {
         return "index";
     }
 
-    // POST method for running the initial analysis (normality check, variances)
     @PostMapping("/analyze")
     public String runAnalysis(@RequestParam("selectedTestType") TestType selectedTestType, Model model) {
         if (lastUploadedProject == null || lastInitialAnalysisResult == null) {
@@ -101,16 +100,11 @@ public class WebController {
         }
 
         lastUploadedProject.setSelectedTestType(selectedTestType);
-
-        // Perform initial analysis (normality check, variances, etc.)
         model.addAttribute("project", lastUploadedProject);
         model.addAttribute("analysis", lastInitialAnalysisResult);
-        model.addAttribute("analysisResultSummary", "(Placeholder) Statistical result will be shown here.");
-
         return "index";
     }
 
-    // POST method for performing the significance test
     @PostMapping("/analyze/significance")
     public String runSignificanceTest(@RequestParam("selectedTestType") TestType selectedTestType, Model model) {
         if (lastUploadedProject == null || lastInitialAnalysisResult == null) {
@@ -119,21 +113,11 @@ public class WebController {
         }
 
         lastUploadedProject.setSelectedTestType(selectedTestType);
-
-        // Run the selected statistical test
-        TestResultSummary resultSummary = analysisService.runTest(lastUploadedProject, lastInitialAnalysisResult);
-
-        // Format the result summary to display p-value and significance
-        String analysisResultSummary = String.format(
-                "p-value: %.4f, Significant at 0.05: %b, Significant at 0.01: %b",
-                resultSummary.getpValue(),
-                resultSummary.isSignificantAt05(),
-                resultSummary.isSignificantAt01()
-        );
+        lastTestResult = analysisService.runTest(lastUploadedProject, lastInitialAnalysisResult);
 
         model.addAttribute("project", lastUploadedProject);
         model.addAttribute("analysis", lastInitialAnalysisResult);
-        model.addAttribute("analysisResultSummary", analysisResultSummary);
+        model.addAttribute("testResult", lastTestResult);
 
         return "index";
     }
