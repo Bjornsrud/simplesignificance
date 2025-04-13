@@ -37,4 +37,20 @@ class AnalysisServiceTest {
         assertTrue(result.variances().get("Group B") > 0.0);
         assertTrue(result.recommendations().stream().anyMatch(r -> r.testType() != TestType.NONE));
     }
+
+    @Test
+    void testAnalyzeDetectsTooFewDataPoints() {
+        Map<String, List<Double>> groupData = new HashMap<>();
+        groupData.put("Tiny", Arrays.asList(1.0, 2.0)); // 2 points = too few
+
+        ProjectData project = new ProjectData();
+        project.setProjectTitle("Small Group");
+        project.setGroupData(groupData);
+
+        InitialAnalysisResult result = analysisService.analyze(project);
+
+        assertTrue(result.tooFewDataPoints());
+        // Do not expect any test to be recommended for one group
+        assertTrue(result.recommendations().isEmpty());
+    }
 }
