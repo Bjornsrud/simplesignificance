@@ -50,7 +50,33 @@ class AnalysisServiceTest {
         InitialAnalysisResult result = analysisService.analyze(project);
 
         assertTrue(result.tooFewDataPoints());
-        // Do not expect any test to be recommended for one group
-        assertTrue(result.recommendations().isEmpty());
+        assertTrue(result.recommendations().isEmpty()); // Should not get recommendations
+    }
+
+    @Test
+    void testAnalyzeTriggersLowPowerWarning() {
+        Map<String, List<Double>> groupData = new HashMap<>();
+        groupData.put("A", generateSequence(1.0, 5.0, 10));
+        groupData.put("B", generateSequence(10.0, 15.0, 10));
+
+        ProjectData project = new ProjectData();
+        project.setProjectTitle("Low Power");
+        project.setGroupData(groupData);
+
+        InitialAnalysisResult result = analysisService.analyze(project);
+
+        assertTrue(result.tooFewDataPoints()); // Less than fifteen items
+        assertFalse(result.lowPowerWarning()); // Not generated unless >=15
+        assertFalse(result.recommendations().isEmpty());  // Should still be able to run test
+    }
+
+
+    private List<Double> generateSequence(double start, double end, int count) {
+        List<Double> list = new ArrayList<>();
+        double step = (end - start) / (count - 1);
+        for (int i = 0; i < count; i++) {
+            list.add(start + step * i);
+        }
+        return list;
     }
 }
