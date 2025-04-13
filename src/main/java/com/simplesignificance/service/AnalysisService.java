@@ -83,7 +83,7 @@ public class AnalysisService {
             if (allNormal && equalVariance) {
                 recommendations.add(new TestRecommendation(TestType.ANOVA, true, "More than two groups, normal and equal variances."));
             } else {
-                recommendations.add(new TestRecommendation(TestType.NONE, true, "Non-normal or unequal variances in >2 groups."));
+                recommendations.add(new TestRecommendation(TestType.NONE, false, "No valid test available for this data."));
             }
         }
 
