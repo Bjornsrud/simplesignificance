@@ -158,4 +158,13 @@ class AnalysisServiceTest {
         }
         return list;
     }
+
+    private List<Double> generateJittered(double center, double jitter, int count) {
+        Random r = new Random(42); // deterministic
+        List<Double> values = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            values.add(center + (r.nextDouble() * 2 - 1) * jitter); // center ± jitter
+        }
+        return values;
+    }
 }
