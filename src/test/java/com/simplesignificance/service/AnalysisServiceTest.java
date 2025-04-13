@@ -3,6 +3,7 @@ package com.simplesignificance.service;
 import com.simplesignificance.model.ProjectData;
 import com.simplesignificance.model.TestType;
 import com.simplesignificance.model.analysis.InitialAnalysisResult;
+import com.simplesignificance.model.analysis.TestResultSummary;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -125,7 +126,6 @@ class AnalysisServiceTest {
         List<Double> g2 = Arrays.asList(12.0, 11.5, 12.5, 11.8, 12.2, 12.3, 11.7, 12.1, 12.6, 12.4,
                 12.0, 11.5, 12.5, 11.8, 12.2, 12.3, 11.7, 12.1, 12.6, 12.4);
 
-
         Map<String, List<Double>> data = new HashMap<>();
         data.put("Control", g1);
         data.put("Treatment", g2);
@@ -141,6 +141,31 @@ class AnalysisServiceTest {
 
         assertTrue(welchRecommended);
     }
+
+    @Test
+    void testRunTestReturnsValidResult() {
+        List<Double> g1 = generateJittered(10.0, 0.2, 20);
+        List<Double> g2 = generateJittered(15.0, 0.2, 20);
+
+        Map<String, List<Double>> data = new LinkedHashMap<>();
+        data.put("Group A", g1);
+        data.put("Group B", g2);
+
+        ProjectData project = new ProjectData();
+        project.setProjectTitle("Run Test");
+        project.setGroupData(data);
+        project.setSelectedTestType(TestType.T_TEST);
+
+        InitialAnalysisResult analysis = analysisService.analyze(project);
+        TestResultSummary result = analysisService.runTest(project, analysis);
+
+        assertNotNull(result);
+        assertTrue(result.getPValue() > 0 && result.getPValue() < 0.05);
+        assertTrue(result.getEffectSize() > 0.8);
+        assertTrue(result.isSigAt10());
+        assertNotNull(result.getTimestamp());
+    }
+
 
     private List<Double> generateSequence(double start, double end, int count) {
         List<Double> list = new ArrayList<>();
