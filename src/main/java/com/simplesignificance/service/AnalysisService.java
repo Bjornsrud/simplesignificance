@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -22,8 +23,6 @@ import java.util.stream.Collectors;
 public class AnalysisService {
 
     private static final Logger logger = LoggerFactory.getLogger(AnalysisService.class);
-
-    public AnalysisService() {}
 
     public InitialAnalysisResult analyze(ProjectData data) {
         Map<String, List<Double>> groupData = data.getGroupData();
@@ -58,7 +57,6 @@ public class AnalysisService {
         }
 
         List<TestRecommendation> recommendations = recommendTests(groupData, variances, isNormal, groupSizes);
-
         return new InitialAnalysisResult(groupSizes, variances, isNormal, recommendations, tooFewDataPoints, lowPowerWarning);
     }
 
@@ -68,7 +66,7 @@ public class AnalysisService {
                                                     Map<String, Integer> groupSizes) {
         List<TestRecommendation> recommendations = new ArrayList<>();
         int groupCount = groupData.size();
-        boolean allNormal = isNormal.values().stream().allMatch(b -> b);
+        boolean allNormal = isNormal.values().stream().allMatch(Boolean::booleanValue);
         boolean equalVariance = variances.values().stream().distinct().count() == 1;
 
         if (groupCount == 2) {
@@ -125,7 +123,7 @@ public class AnalysisService {
                 case MANN_WHITNEY -> {
                     List<List<Double>> groups = new ArrayList<>(groupData.values());
                     pValue = runMannWhitneyTest(groups.get(0), groups.get(1));
-                    effectSize = computeCohensD(groups.get(0), groups.get(1)); // approx non-parametric
+                    effectSize = computeCohensD(groups.get(0), groups.get(1)); // approx
                 }
                 case WILCOXON -> {
                     List<List<Double>> groups = new ArrayList<>(groupData.values());
@@ -154,7 +152,8 @@ public class AnalysisService {
                 pValue > 0 && pValue < 0.01,
                 pValue > 0 && pValue < 0.001,
                 effectSize,
-                skewness
+                skewness,
+                LocalDateTime.now()
         );
     }
 
