@@ -2,6 +2,7 @@ package com.simplesignificance.model.analysis;
 
 import com.simplesignificance.model.TestType;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -17,6 +18,7 @@ public class TestResultSummary {
     private final boolean sigAt001;
     private final double effectSize;
     private final Map<String, Double> skewness;
+    private final LocalDateTime timestamp;
 
     public TestResultSummary(Map<String, List<Double>> groupData,
                              InitialAnalysisResult analysis,
@@ -27,7 +29,8 @@ public class TestResultSummary {
                              boolean sigAt01,
                              boolean sigAt001,
                              double effectSize,
-                             Map<String, Double> skewness) {
+                             Map<String, Double> skewness,
+                             LocalDateTime timestamp) {
         this.groupData = groupData;
         this.analysis = analysis;
         this.testType = testType;
@@ -38,6 +41,7 @@ public class TestResultSummary {
         this.sigAt001 = sigAt001;
         this.effectSize = effectSize;
         this.skewness = skewness;
+        this.timestamp = timestamp;
     }
 
     public Map<String, List<Double>> getGroupData() {
@@ -78,5 +82,9 @@ public class TestResultSummary {
 
     public Map<String, Double> getSkewness() {
         return skewness;
+    }
+
+    public LocalDateTime getTimestamp() {
+        return timestamp;
     }
 }
