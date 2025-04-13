@@ -62,7 +62,7 @@ public class AnalysisService {
 
         List<TestRecommendation> recommendations = invalidForTesting
                 ? List.of()
-                : recommendTests(groupData, variances, isNormal, groupSizes);
+                : recommendTests(groupData, variances, isNormal);
 
         return new InitialAnalysisResult(
                 groupSizes,
@@ -77,8 +77,7 @@ public class AnalysisService {
 
     private List<TestRecommendation> recommendTests(Map<String, List<Double>> groupData,
                                                     Map<String, Double> variances,
-                                                    Map<String, Boolean> isNormal,
-                                                    Map<String, Integer> groupSizes) {
+                                                    Map<String, Boolean> isNormal) {
 
         List<TestRecommendation> recommendations = new ArrayList<>();
         int groupCount = groupData.size();
@@ -106,7 +105,6 @@ public class AnalysisService {
 
     public TestResultSummary runTest(ProjectData data, InitialAnalysisResult analysis) {
         Map<String, List<Double>> groupData = data.getGroupData();
-        int groupCount = groupData.size();
         TestType testType = data.getSelectedTestType();
 
         double pValue = -1.0;
