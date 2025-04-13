@@ -170,12 +170,11 @@
 
         <h4 th:text="#{analysis.test.summary}">Summary</h4>
         <p>
-            <span th:if="${testResult.pValue < 0.05}">
-                The observed difference is statistically significant (p &lt; 0.05), so we can reject the null hypothesis.
-            </span>
-            <span th:if="${testResult.pValue >= 0.05}">
-                The result is not statistically significant (p ≥ 0.05), so we cannot reject the null hypothesis.
-            </span>
+            <span th:if="${testResult.sigAt001}" th:text="#{analysis.test.summary.sigAt001}"></span>
+            <span th:if="${!testResult.sigAt001 and testResult.sigAt01}" th:text="#{analysis.test.summary.sigAt01}"></span>
+            <span th:if="${!testResult.sigAt001 and !testResult.sigAt01 and testResult.sigAt05}" th:text="#{analysis.test.summary.sigAt05}"></span>
+            <span th:if="${!testResult.sigAt001 and !testResult.sigAt01 and !testResult.sigAt05 and testResult.sigAt10}" th:text="#{analysis.test.summary.sigAt10}"></span>
+            <span th:if="${!testResult.sigAt10}" th:text="#{analysis.test.summary.notSig}"></span>
         </p>
 
         <button onclick="window.print()" class="print-button" th:text="#{analysis.print}">Print Report</button>
