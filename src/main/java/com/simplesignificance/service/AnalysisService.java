@@ -48,12 +48,14 @@ public class AnalysisService {
             skewness.put(groupName, stats.getSkewness());
 
             if (n < 5) {
-                invalidForTesting = true;  // Reject completely
+                invalidForTesting = true;
+                tooFewDataPoints = true; // Dette må settes eksplisitt
             } else if (n < 15) {
                 tooFewDataPoints = true;
             } else if (n < 30) {
                 lowPowerWarning = true;
             }
+
 
             boolean normal = Math.abs(stats.getSkewness()) < 1.0 && Math.abs(stats.getKurtosis()) < 3.5;
             isNormal.put(groupName, normal);
