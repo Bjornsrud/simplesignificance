@@ -17,11 +17,12 @@
 
 <div class="container">
     <h1 th:text="#{app.title}">Simple Significance</h1>
-    <p th:text="#{app.tagline}">Upload your data. Choose a test. Understand your results.</p>
+    <p th:text="#{app.tagline}">Simple, guided hypothesis testing.</p>
     <p th:text="#{app.description}"></p>
+    <p class="note-highlight" th:text="#{app.note}"></p>
 
-    <h2>About significance testing</h2>
     <div class="tabs">
+        <h2>About significance testing</h2>
         <div class="tab-buttons">
             <button class="tab-link active" onclick="openTab(event, 'hypothesis')">Hypothesis Testing</button>
             <button class="tab-link" onclick="openTab(event, 'tests')">Statistical Tests</button>
@@ -33,6 +34,7 @@
     </div>
 
     <div class="uploadsSection">
+        <h2>Upload data</h2>
         <form action="/upload#project-section" method="post" enctype="multipart/form-data">
             <label for="csvFile" th:text="#{form.label}">Please upload a CSV file with two columns:</label><br><br>
             <div class="custom-file-upload">

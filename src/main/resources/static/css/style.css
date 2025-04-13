@@ -81,21 +81,6 @@ h1, h2 {
 }
 
 /* ============================================================
-   Details Section
-   ============================================================ */
-details {
-    margin-top: 30px;
-    padding: 10px;
-    background: #f1f1f1;
-    border-radius: 5px;
-}
-
-details summary {
-    cursor: pointer;
-    font-weight: bold;
-}
-
-/* ============================================================
    File Upload Styling
    ============================================================ */
 .custom-file-upload {
@@ -163,7 +148,6 @@ button:hover {
 /* ============================================================
    Project details
    ============================================================ */
-
 .projectSection {
     border: 1px solid #ccc;
     border-radius: 8px;
@@ -206,4 +190,58 @@ th, td {
     opacity: 0.6;
     border-left: 4px solid #ccc;
     padding-left: 8px;
+}
+
+/* ============================================================
+   Tab Component
+   ============================================================ */
+.tabs {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 16px;
+    background-color: #f9f9f9;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.tab-buttons {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.tab-link {
+    padding: 8px 16px;
+    border: 1px solid #2c3e50;
+    background-color: white;
+    color: #2c3e50;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.tab-link.active {
+    background-color: #2c3e50;
+    color: white;
+}
+
+.tab-link:hover {
+    background-color: #1a252f;
+    color: white;
+}
+
+.tab-content {
+    display: none;
+    padding: 10px 0;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.note-highlight {
+    color: #b20000;
+    margin-top: 10px;
 }
