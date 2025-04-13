@@ -8,7 +8,7 @@
 <body>
 
 <div class="header">
-    <div class="left">Simple Significance</div>
+    <div class="left">Simple Significance BETA</div>
     <div class="right">
         <a th:href="@{/(lang='en')}">EN</a> | <a th:href="@{/(lang='nb')}">NO</a>
         <span> | <a href="#">Login</a></span>
@@ -20,19 +20,16 @@
     <p th:text="#{app.tagline}">Upload your data. Choose a test. Understand your results.</p>
     <p th:text="#{app.description}"></p>
 
-    <div class="detailsSection">
-        <details>
-            <summary th:text="#{help.hypothesis.title}">What is hypothesis testing?</summary>
-            <p th:text="#{help.hypothesis.description}"></p>
-        </details>
-        <details>
-            <summary th:text="#{help.tests.title}">Which statistical test should I choose?</summary>
-            <p th:utext="#{help.tests.description}"></p>
-        </details>
-        <details>
-            <summary th:text="#{help.csv.title}">How should the CSV file be formatted?</summary>
-            <p th:utext="#{help.csv.description}"></p>
-        </details>
+    <h2>About significance testing</h2>
+    <div class="tabs">
+        <div class="tab-buttons">
+            <button class="tab-link active" onclick="openTab(event, 'hypothesis')">Hypothesis Testing</button>
+            <button class="tab-link" onclick="openTab(event, 'tests')">Statistical Tests</button>
+            <button class="tab-link" onclick="openTab(event, 'csv')">CSV Format</button>
+        </div>
+        <div id="hypothesis" class="tab-content active" th:text="#{help.hypothesis.description}">What is hypothesis testing?</div>
+        <div id="tests" class="tab-content" th:utext="#{help.tests.description}">Which test should I choose?</div>
+        <div id="csv" class="tab-content" th:utext="#{help.csv.description}">How should the CSV be formatted?</div>
     </div>
 
     <div class="uploadsSection">
@@ -92,7 +89,7 @@
             <div th:if="${analysis.recommendations.isEmpty()}" class="no-recommended-tests">
                 <p th:text="#{analysis.test.noRecommended}">No recommended tests based on the data.</p>
             </div>
-            <form action="/analyze#project-section" method="post">
+            <form action="/analyze/significance#project-section" method="post">
                 <div class="test-options" style="display: flex; flex-direction: column; gap: 0.5rem;">
                     <label th:each="test : ${analysis.recommendations}" th:class="${test.recommended} ? 'recommended' : 'not-recommended'">
                         <input type="radio" name="selectedTestType" th:value="${test.testType}" th:checked="${test.recommended}">
@@ -108,8 +105,8 @@
             </form>
         </div>
 
-        <div th:if="${analysisResultSummary}" class="resultSection">
-            <h3 th:text="#{analysis.result.title}">Analysis Result</h3>
+        <div th:if="${analysisResultSummary}" class="significanceTestSection">
+            <h3 th:text="#{analysis.test.result.title}">Significance Test Result</h3>
             <p th:text="${analysisResultSummary}"></p>
         </div>
     </div>
@@ -119,6 +116,17 @@
     function updateFileName(input) {
         const fileNameSpan = document.getElementById('file-name');
         fileNameSpan.textContent = input.files.length > 0 ? input.files[0].name : fileNameSpan.dataset.defaultText;
+    }
+
+    function openTab(evt, tabId) {
+        const tabContents = document.querySelectorAll('.tab-content');
+        tabContents.forEach(tc => tc.classList.remove('active'));
+
+        const tabLinks = document.querySelectorAll('.tab-link');
+        tabLinks.forEach(tl => tl.classList.remove('active'));
+
+        document.getElementById(tabId).classList.add('active');
+        evt.currentTarget.classList.add('active');
     }
 
     window.addEventListener("load", function () {
