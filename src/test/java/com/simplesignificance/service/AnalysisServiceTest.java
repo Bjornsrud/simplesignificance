@@ -3,8 +3,6 @@ package com.simplesignificance.service;
 import com.simplesignificance.model.ProjectData;
 import com.simplesignificance.model.TestType;
 import com.simplesignificance.model.analysis.InitialAnalysisResult;
-import com.simplesignificance.model.analysis.TestRecommendation;
-import com.simplesignificance.model.analysis.TestResultSummary;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -117,7 +115,32 @@ class AnalysisServiceTest {
         assertTrue(tTestRecommended);
     }
 
+    @Test
+    void testAnalyzeRecommendsWelchTTestWhenVarianceDifferent() {
 
+        // Unequal variance leads to Welch T-Test to be recommended. g1	= ~0.12, g1 = ~0.17
+        List<Double> g1 = Arrays.asList(10.0, 10.5, 9.5, 10.2, 10.1, 10.4, 9.9, 10.3, 10.6, 10.0,
+                10.0, 10.5, 9.5, 10.2, 10.1, 10.4, 9.9, 10.3, 10.6, 10.0);
+
+        List<Double> g2 = Arrays.asList(12.0, 11.5, 12.5, 11.8, 12.2, 12.3, 11.7, 12.1, 12.6, 12.4,
+                12.0, 11.5, 12.5, 11.8, 12.2, 12.3, 11.7, 12.1, 12.6, 12.4);
+
+
+        Map<String, List<Double>> data = new HashMap<>();
+        data.put("Control", g1);
+        data.put("Treatment", g2);
+
+        ProjectData project = new ProjectData();
+        project.setProjectTitle("T-test Recommended");
+        project.setGroupData(data);
+
+        InitialAnalysisResult result = analysisService.analyze(project);
+
+        boolean welchRecommended = result.recommendations().stream()
+                .anyMatch(r -> r.testType() == TestType.WELCH_T_TEST && r.recommended());
+
+        assertTrue(welchRecommended);
+    }
 
     private List<Double> generateSequence(double start, double end, int count) {
         List<Double> list = new ArrayList<>();
