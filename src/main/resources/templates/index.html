@@ -147,7 +147,7 @@
                         <input type="radio" name="selectedTestType" th:value="${test.testType}"
                                th:checked="${test.recommended}">
                         <span>
-                            <b th:text="#{${'testtype.' + test.testType.name()}} + ':'"></b>
+                            <b th:text="|#{${'testtype.' + test.testType.name()}}:|"></b>
                             <small th:text="#{${'testreason.' + test.testType.name()}}"></small>
                         </span>
                         <span th:if="${!test.recommended}" class="not-recommended-note">
