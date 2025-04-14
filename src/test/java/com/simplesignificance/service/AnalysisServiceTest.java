@@ -202,6 +202,30 @@ class AnalysisServiceTest {
         assertTrue(result.tooFewDataPoints());
     }
 
+    @Test
+    void testAnalyzeRecommendsPairedTTestWhenPairedAndNormal() {
+        // To grupper med samme fordeling og parvise observasjoner
+        List<Double> g1 = Arrays.asList(10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 13.5, 12.5, 11.5, 10.5,
+                10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 13.5, 12.5, 11.5, 10.5);
+        List<Double> g2 = g1.stream().map(v -> v + 1.0).toList(); // Samme varians, mean forskjell
+
+        Map<String, List<Double>> data = new HashMap<>();
+        data.put("Before", g1);
+        data.put("After", g2);
+
+        ProjectData project = new ProjectData();
+        project.setProjectTitle("Paired Normal");
+        project.setGroupData(data);
+        project.setPaired(true);
+
+        InitialAnalysisResult result = analysisService.analyze(project);
+
+        boolean pairedTTestRecommended = result.recommendations().stream()
+                .anyMatch(r -> r.testType() == TestType.PAIRED_T_TEST && r.recommended());
+
+        assertTrue(pairedTTestRecommended, "Expected Paired T-Test to be recommended");
+    }
+
     private List<Double> generateSequence(double start, double end, int count) {
         List<Double> list = new ArrayList<>();
         double step = (end - start) / (count - 1);
