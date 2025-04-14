@@ -190,14 +190,10 @@
                     <tr>
                         <th th:text="#{analysis.test.significance}">Significance Levels</th>
                         <td>
-                    <span class="badge"
-                          th:classappend="${testResult.sigAt10} ? 'badge-green' : 'badge-red'">p < 0.10</span>
-                            <span class="badge"
-                                  th:classappend="${testResult.sigAt05} ? 'badge-green' : 'badge-red'">p < 0.05</span>
-                            <span class="badge"
-                                  th:classappend="${testResult.sigAt01} ? 'badge-green' : 'badge-red'">p < 0.01</span>
-                            <span class="badge"
-                                  th:classappend="${testResult.sigAt001} ? 'badge-green' : 'badge-red'">p < 0.001</span>
+                            <span class="badge" th:classappend="${testResult.sigAt10} ? 'badge-green' : 'badge-red'">p < 0.10</span>
+                            <span class="badge" th:classappend="${testResult.sigAt05} ? 'badge-green' : 'badge-red'">p < 0.05</span>
+                            <span class="badge" th:classappend="${testResult.sigAt01} ? 'badge-green' : 'badge-red'">p < 0.01</span>
+                            <span class="badge" th:classappend="${testResult.sigAt001} ? 'badge-green' : 'badge-red'">p < 0.001</span>
                         </td>
                     </tr>
                 </table>

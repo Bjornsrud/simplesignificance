@@ -388,7 +388,15 @@ th, td {
     .tab-buttons, .header, .note-highlight {
         display: none;
     }
+
+    .badge-red {
+        text-decoration: line-through;
+        color: #888 !important;  /* gjør fargen mer diskret i utskrift */
+        border-color: #ccc;
+        background-color: transparent;
+    }
 }
+
 
 /* ============================================================
    External link
@@ -404,7 +412,7 @@ th, td {
 }
 
 /* ============================================================
-   Syb tabs.
+   Sub tabs.
    ============================================================ */
 .tab-sub-buttons {
     margin-top: 1rem;
