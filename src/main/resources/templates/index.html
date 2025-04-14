@@ -49,6 +49,16 @@
                 <label for="csvFile" th:text="#{form.chooseFile}">Choose file</label>
                 <span id="file-name" th:text="#{form.noFileChosen}" th:attr="data-default-text=#{form.noFileChosen}">No file chosen</span>
             </div>
+            <!-- Optional: paired checkbox, only relevant for two-group datasets -->
+            <div class="paired-option">
+                <label>
+                    <input type="checkbox" name="paired" value="true">
+                    <span th:text="#{form.pairedCheckbox}">These groups are paired (e.g., before/after)</span>
+                </label>
+                <p class="note" th:text="#{form.pairedNote}">
+                    This option only applies if your CSV contains exactly two groups. It will be ignored otherwise.
+                </p>
+            </div>
             <button type="submit" th:text="#{form.button}">Upload and analyze</button>
         </form>
 
