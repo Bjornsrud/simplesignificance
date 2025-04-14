@@ -390,3 +390,15 @@ th, td {
     }
 }
 
+/* ============================================================
+   External link
+   ============================================================ */
+.external-link {
+    color: #0056b3;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.external-link:hover {
+    text-decoration: underline;
+}
