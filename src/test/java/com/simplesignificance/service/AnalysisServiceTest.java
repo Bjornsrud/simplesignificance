@@ -249,6 +249,31 @@ class AnalysisServiceTest {
         assertTrue(wilcoxonRecommended, "Expected Wilcoxon to be recommended");
     }
 
+    @Test
+    void testAnalyzeWithThreeGroupsAndNonNormalReturnsNone() {
+        // Tre grupper med ulik fordeling, ulik varians
+        List<Double> g1 = Arrays.asList(10.0, 10.0, 10.0, 10.0, 10.0); // null varians
+        List<Double> g2 = Arrays.asList(10.0, 15.0, 20.0, 25.0, 30.0); // stor spredning
+        List<Double> g3 = Arrays.asList(8.0, 9.0, 7.0, 8.5, 9.5);      // middels variasjon
+
+        Map<String, List<Double>> data = new LinkedHashMap<>();
+        data.put("X", g1);
+        data.put("Y", g2);
+        data.put("Z", g3);
+
+        ProjectData project = new ProjectData();
+        project.setProjectTitle("Three Groups Non-Normal");
+        project.setGroupData(data);
+        project.setPaired(false);
+
+        InitialAnalysisResult result = analysisService.analyze(project);
+
+        boolean onlyNonePresent = result.recommendations().size() == 1 &&
+                result.recommendations().get(0).testType() == TestType.NONE;
+
+        assertTrue(onlyNonePresent, "Expected only NONE to be recommended");
+    }
+
     private List<Double> generateSequence(double start, double end, int count) {
         List<Double> list = new ArrayList<>();
         double step = (end - start) / (count - 1);
