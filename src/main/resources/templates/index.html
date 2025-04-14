@@ -96,23 +96,31 @@
             </div>
 
             <!-- Only show recommended tests section if recommended tests exist -->
-            <div th:if="${!analysis.recommendations.?[recommended].isEmpty()}">
-                <h3 th:text="#{analysis.recommendations.title}">Recommended Tests</h3>
-                <form action="/analyze/significance#project-section" method="post">
-                    <div class="test-options" style="display: flex; flex-direction: column; gap: 0.5rem;">
-                        <label th:each="test : ${analysis.recommendations}" th:class="${test.recommended} ? 'recommended' : 'not-recommended'">
-                            <input type="radio" name="selectedTestType" th:value="${test.testType}" th:checked="${test.recommended}">
-                            <span th:text="#{${'testtype.' + test.testType.name()}}"></span>
-                            <small th:text="#{${'testreason.' + test.testType.name()}}"></small>
-                            <span th:if="${!test.recommended}" class="not-recommended-note">
-                            <br>
-                            <i>(This test is not recommended based on the data.)</i>
-                        </span>
-                        </label>
-                    </div>
-                    <button type="submit" th:text="#{form.startAnalysis}" style="margin-top: 1rem;"></button>
-                </form>
+            <!-- Only show recommended tests section if recommended tests exist -->
+            <h3 th:text="#{analysis.recommendations.title}">Recommended Tests</h3>
+
+            <!-- Show if there are any recommended tests -->
+            <form th:if="${!analysis.recommendations.?[recommended].isEmpty()}" action="/analyze/significance#project-section" method="post">
+                <div class="test-options" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label th:each="test : ${analysis.recommendations}" th:class="${test.recommended} ? 'recommended' : 'not-recommended'">
+                        <input type="radio" name="selectedTestType" th:value="${test.testType}" th:checked="${test.recommended}">
+                        <span th:text="#{${'testtype.' + test.testType.name()}}"></span>
+                        <small th:text="#{${'testreason.' + test.testType.name()}}"></small>
+                        <span th:if="${!test.recommended}" class="not-recommended-note">
+                <br>
+                <i th:text="#{analysis.test.notRecommendedNote}">(This test is not recommended based on the data.)</i>
+            </span>
+                    </label>
+                </div>
+                <button type="submit" th:text="#{form.startAnalysis}" style="margin-top: 1rem;"></button>
+            </form>
+
+            <!-- Show this if NO recommended tests exist -->
+            <div th:if="${analysis.recommendations.?[recommended].isEmpty()}">
+                <p class="warning" th:text="#{analysis.test.noRecommended}">No recommended tests based on the data.</p>
+                <p class="warning" th:text="#{analysis.test.noRecommended.warning}">Your dataset does not meet the criteria for any of the currently supported significance tests...</p>
             </div>
+
         </div>
     </div>
 
