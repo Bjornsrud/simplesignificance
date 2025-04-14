@@ -78,6 +78,15 @@
             <span th:text="${project.projectTitle}">[projectTitle]</span>
         </p>
 
+        <div th:if="${project.paired}">
+            <p class="note">
+                <span th:text="#{form.pairedUserNote}">You selected that these groups are paired.</span>
+                <span th:if="${analysis.groupSizes.size() > 2}" class="warning" th:text="#{form.pairedTooManyGroups}">
+            Note: This setting will be ignored because the dataset contains more than two groups.
+        </span>
+            </p>
+        </div>
+
         <div th:if="${analysis}" class="analysisSection">
             <h3 th:text="#{analysis.summary.title}">Data Summary</h3>
             <table>
@@ -105,14 +114,6 @@
                 <p th:if="${analysis.recommendations.isEmpty() and analysis.tooFewDataPoints}" class="warning" th:text="#{analysis.warning.invalid}"></p>
                 <p th:if="${!analysis.recommendations.isEmpty() and analysis.tooFewDataPoints}" class="warning" th:text="#{analysis.warning.tooFew}"></p>
                 <p th:if="${!analysis.tooFewDataPoints and analysis.lowPowerWarning}" class="warning" th:text="#{analysis.warning.lowPower}"></p>
-            </div>
-
-            <!-- Optional checkbox for paired data -->
-            <div th:if="${analysis.groupSizes.size() == 2}">
-                <label>
-                    <input type="checkbox" name="paired" value="true" th:checked="${project.paired}">
-                    <span th:text="#{form.pairedCheckbox}">These groups are paired (e.g., before/after)</span>
-                </label>
             </div>
 
             <!-- Only show recommended tests section if recommended tests exist -->
