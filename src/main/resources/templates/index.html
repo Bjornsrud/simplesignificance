@@ -29,9 +29,15 @@
     <div class="tabs">
         <h2 th:text="#{section.about}">About significance testing</h2>
         <div class="tab-buttons">
-            <button class="tab-link active" onclick="openTab(event, 'hypothesis')" th:text="#{tab.hypothesis}">What is hypothesis testing?</button>
-            <button class="tab-link" onclick="openTab(event, 'basics')" th:text="#{help.tab.basics}">Basics of Hypothesis Testing</button>
-            <button class="tab-link" onclick="openTab(event, 'tests')" th:text="#{tab.tests}">Common significance tests</button>
+            <button class="tab-link active" onclick="openTab(event, 'hypothesis')" th:text="#{tab.hypothesis}">What is
+                hypothesis testing?
+            </button>
+            <button class="tab-link" onclick="openTab(event, 'basics')" th:text="#{help.tab.basics}">Basics of
+                Hypothesis Testing
+            </button>
+            <button class="tab-link" onclick="openTab(event, 'tests')" th:text="#{tab.tests}">Common significance
+                tests
+            </button>
             <button class="tab-link" onclick="openTab(event, 'csv')" th:text="#{tab.csv}">CSV format</button>
         </div>
         <div id="hypothesis" class="tab-content active" th:utext="#{help.hypothesis.description}"></div>
@@ -111,21 +117,39 @@
             </table>
 
             <div class="warnings">
-                <p th:if="${analysis.recommendations.isEmpty() and analysis.tooFewDataPoints}" class="warning" th:text="#{analysis.warning.invalid}"></p>
-                <p th:if="${!analysis.recommendations.isEmpty() and analysis.tooFewDataPoints}" class="warning" th:text="#{analysis.warning.tooFew}"></p>
-                <p th:if="${!analysis.tooFewDataPoints and analysis.lowPowerWarning}" class="warning" th:text="#{analysis.warning.lowPower}"></p>
+                <!-- For kritisk lavt datagrunnlag -->
+                <p th:if="${analysis.recommendations.isEmpty() and analysis.tooFewDataPoints}" class="warning"
+                   th:text="#{analysis.warning.invalid}"></p>
+
+                <!-- Når det finnes anbefalte tester, men noen grupper har få datapunkter -->
+                <p th:if="${!analysis.recommendations.isEmpty() and analysis.tooFewDataPoints}" class="warning"
+                   th:text="#{analysis.warning.tooFew}"></p>
+
+                <!-- Når datamengde er 15–29: advarsel om statistisk styrke -->
+                <p th:if="${!analysis.tooFewDataPoints and analysis.lowPowerWarning}" class="warning"
+                   th:text="#{analysis.warning.lowPower}"></p>
+
+                <!-- Ny: Når ingen tester kunne anbefales pga. flerguppebegrensning -->
+                <p th:if="${analysis.recommendations.size() == 1 and analysis.recommendations[0].testType.name() == 'NONE'}"
+                   class="note" th:text="#{analysis.test.multigroupNote}"></p>
+
             </div>
 
             <!-- Only show recommended tests section if recommended tests exist -->
             <h3 th:text="#{analysis.recommendations.title}">Recommended Tests</h3>
 
             <!-- Show if there are any recommended tests -->
-            <form th:if="${!analysis.recommendations.?[recommended].isEmpty()}" action="/analyze/significance#project-section" method="post">
+            <form th:if="${!analysis.recommendations.?[recommended].isEmpty()}"
+                  action="/analyze/significance#project-section" method="post">
                 <div class="test-options" style="display: flex; flex-direction: column; gap: 0.5rem;">
-                    <label th:each="test : ${analysis.recommendations}" th:class="${test.recommended} ? 'recommended' : 'not-recommended'">
-                        <input type="radio" name="selectedTestType" th:value="${test.testType}" th:checked="${test.recommended}">
-                        <span th:text="#{${'testtype.' + test.testType.name()}}"></span>
-                        <small th:text="#{${'testreason.' + test.testType.name()}}"></small>
+                    <label th:each="test : ${analysis.recommendations}"
+                           th:class="${test.recommended} ? 'recommended' : 'not-recommended'">
+                        <input type="radio" name="selectedTestType" th:value="${test.testType}"
+                               th:checked="${test.recommended}">
+                        <span>
+                            <b th:text="#{${'testtype.' + test.testType.name()}} + ':'"></b>
+                            <small th:text="#{${'testreason.' + test.testType.name()}}"></small>
+                        </span>
                         <span th:if="${!test.recommended}" class="not-recommended-note">
                 <br>
                 <i th:text="#{analysis.test.notRecommendedNote}">(This test is not recommended based on the data.)</i>
@@ -138,12 +162,13 @@
             <!-- Show this if NO recommended tests exist -->
             <div th:if="${analysis.recommendations.?[recommended].isEmpty()}">
                 <p class="warning" th:text="#{analysis.test.noRecommended}">No recommended tests based on the data.</p>
-                <p class="warning" th:text="#{analysis.test.noRecommended.warning}">Your dataset does not meet the criteria for any of the currently supported significance tests...</p>
+                <p th:if="${analysis.tooFewDataPoints}" class="note" th:text="#{analysis.test.dataTooSmall}"></p>
+                <p class="warning" th:text="#{analysis.test.noRecommended.warning}">Your dataset does not meet the
+                    criteria for any of the currently supported significance tests...</p>
             </div>
 
         </div>
     </div>
-
 
 
     <!-- Significance Test Report Box (separate from projectSection) -->
@@ -174,10 +199,14 @@
             <tr>
                 <th th:text="#{analysis.test.significance}">Significance Levels</th>
                 <td>
-                    <span class="badge" th:classappend="${testResult.sigAt10} ? 'badge-green' : 'badge-red'">p < 0.10</span>
-                    <span class="badge" th:classappend="${testResult.sigAt05} ? 'badge-green' : 'badge-red'">p < 0.05</span>
-                    <span class="badge" th:classappend="${testResult.sigAt01} ? 'badge-green' : 'badge-red'">p < 0.01</span>
-                    <span class="badge" th:classappend="${testResult.sigAt001} ? 'badge-green' : 'badge-red'">p < 0.001</span>
+                    <span class="badge"
+                          th:classappend="${testResult.sigAt10} ? 'badge-green' : 'badge-red'">p < 0.10</span>
+                    <span class="badge"
+                          th:classappend="${testResult.sigAt05} ? 'badge-green' : 'badge-red'">p < 0.05</span>
+                    <span class="badge"
+                          th:classappend="${testResult.sigAt01} ? 'badge-green' : 'badge-red'">p < 0.01</span>
+                    <span class="badge"
+                          th:classappend="${testResult.sigAt001} ? 'badge-green' : 'badge-red'">p < 0.001</span>
                 </td>
             </tr>
         </table>
@@ -209,16 +238,20 @@
         <h4 th:text="#{analysis.test.summary}">Summary</h4>
         <p>
             <span th:if="${testResult.sigAt001}" th:text="#{analysis.test.summary.sigAt001}"></span>
-            <span th:if="${!testResult.sigAt001 and testResult.sigAt01}" th:text="#{analysis.test.summary.sigAt01}"></span>
-            <span th:if="${!testResult.sigAt001 and !testResult.sigAt01 and testResult.sigAt05}" th:text="#{analysis.test.summary.sigAt05}"></span>
-            <span th:if="${!testResult.sigAt001 and !testResult.sigAt01 and !testResult.sigAt05 and testResult.sigAt10}" th:text="#{analysis.test.summary.sigAt10}"></span>
+            <span th:if="${!testResult.sigAt001 and testResult.sigAt01}"
+                  th:text="#{analysis.test.summary.sigAt01}"></span>
+            <span th:if="${!testResult.sigAt001 and !testResult.sigAt01 and testResult.sigAt05}"
+                  th:text="#{analysis.test.summary.sigAt05}"></span>
+            <span th:if="${!testResult.sigAt001 and !testResult.sigAt01 and !testResult.sigAt05 and testResult.sigAt10}"
+                  th:text="#{analysis.test.summary.sigAt10}"></span>
             <span th:if="${!testResult.sigAt10}" th:text="#{analysis.test.summary.notSig}"></span>
         </p>
 
         <!-- Include any warnings from the initial analysis -->
         <div class="warnings">
             <p th:if="${testResult.analysis.tooFewDataPoints}" class="warning" th:text="#{analysis.warning.tooFew}"></p>
-            <p th:if="${!testResult.analysis.tooFewDataPoints and testResult.analysis.lowPowerWarning}" class="warning" th:text="#{analysis.warning.lowPower}"></p>
+            <p th:if="${!testResult.analysis.tooFewDataPoints and testResult.analysis.lowPowerWarning}" class="warning"
+               th:text="#{analysis.warning.lowPower}"></p>
         </div>
 
         <button onclick="window.print()" class="print-button" th:text="#{analysis.print}">Print Report</button>
