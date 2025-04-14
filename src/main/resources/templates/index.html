@@ -95,7 +95,14 @@
                 <p th:if="${!analysis.tooFewDataPoints and analysis.lowPowerWarning}" class="warning" th:text="#{analysis.warning.lowPower}"></p>
             </div>
 
-            <!-- Only show recommended tests section if recommended tests exist -->
+            <!-- Optional checkbox for paired data -->
+            <div th:if="${analysis.groupSizes.size() == 2}">
+                <label>
+                    <input type="checkbox" name="paired" value="true" th:checked="${project.paired}">
+                    <span th:text="#{form.pairedCheckbox}">These groups are paired (e.g., before/after)</span>
+                </label>
+            </div>
+
             <!-- Only show recommended tests section if recommended tests exist -->
             <h3 th:text="#{analysis.recommendations.title}">Recommended Tests</h3>
 
