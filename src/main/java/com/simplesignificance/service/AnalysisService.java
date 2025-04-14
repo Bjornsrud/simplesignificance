@@ -28,8 +28,8 @@ public class AnalysisService {
         Map<String, List<Double>> groupData = data.getGroupData();
         Map<String, Integer> groupSizes = new HashMap<>();
         Map<String, Double> variances = new HashMap<>();
-        Map<String, Boolean> isNormal = new HashMap<>();
         Map<String, Double> skewness = new HashMap<>();
+        Map<String, Boolean> isNormal = new HashMap<>();
 
         boolean tooFewDataPoints = false;
         boolean lowPowerWarning = false;
@@ -62,35 +62,36 @@ public class AnalysisService {
 
         List<TestRecommendation> recommendations = invalidForTesting
                 ? List.of()
-                : recommendTests(groupData, variances, isNormal);
+                : recommendTests(groupData, variances, isNormal, data.isPaired());
 
-        return new InitialAnalysisResult(
-                groupSizes,
-                variances,
-                isNormal,
-                recommendations,
-                tooFewDataPoints,
-                lowPowerWarning,
-                skewness
-        );
+        return new InitialAnalysisResult(groupSizes, variances, isNormal, recommendations, tooFewDataPoints, lowPowerWarning, skewness);
     }
+
 
     private List<TestRecommendation> recommendTests(Map<String, List<Double>> groupData,
                                                     Map<String, Double> variances,
-                                                    Map<String, Boolean> isNormal) {
-
+                                                    Map<String, Boolean> isNormal,
+                                                    boolean paired) {
         List<TestRecommendation> recommendations = new ArrayList<>();
         int groupCount = groupData.size();
         boolean allNormal = isNormal.values().stream().allMatch(Boolean::booleanValue);
         boolean equalVariance = variances.values().stream().distinct().count() == 1;
 
         if (groupCount == 2) {
-            if (allNormal && equalVariance) {
-                recommendations.add(new TestRecommendation(TestType.T_TEST, true, "Groups appear normal and variances equal."));
-            } else if (allNormal) {
-                recommendations.add(new TestRecommendation(TestType.WELCH_T_TEST, true, "Groups normal, variances unequal."));
+            if (paired) {
+                if (allNormal) {
+                    recommendations.add(new TestRecommendation(TestType.PAIRED_T_TEST, true, "Data is paired and normal."));
+                } else {
+                    recommendations.add(new TestRecommendation(TestType.WILCOXON, true, "Data is paired and non-normal."));
+                }
             } else {
-                recommendations.add(new TestRecommendation(TestType.MANN_WHITNEY, true, "Groups non-normal, Mann-Whitney suggested."));
+                if (allNormal && equalVariance) {
+                    recommendations.add(new TestRecommendation(TestType.T_TEST, true, "Groups appear normal and variances equal."));
+                } else if (allNormal) {
+                    recommendations.add(new TestRecommendation(TestType.WELCH_T_TEST, true, "Groups normal, variances unequal."));
+                } else {
+                    recommendations.add(new TestRecommendation(TestType.MANN_WHITNEY, true, "Groups non-normal, Mann-Whitney suggested."));
+                }
             }
         } else if (groupCount > 2) {
             if (allNormal && equalVariance) {
