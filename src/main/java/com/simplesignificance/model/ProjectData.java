@@ -15,6 +15,8 @@ public class ProjectData {
 
     private TestType selectedTestType;
 
+    private boolean paired = false;
+
     // TODO: Add field to associate this with a user (e.g., userId or User object)
     // private Long userId;
 
@@ -54,5 +56,13 @@ public class ProjectData {
 
     public void setSelectedTestType(TestType selectedTestType) {
         this.selectedTestType = selectedTestType;
+    }
+
+    public boolean isPaired() {
+        return paired;
+    }
+
+    public void setPaired(boolean paired) {
+        this.paired = paired;
     }
 }
