@@ -33,6 +33,8 @@ public class WebController {
     private InitialAnalysisResult lastInitialAnalysisResult;
     private TestResultSummary lastTestResult;
 
+    private static final String FRONT_PAGE = "index";
+
     public WebController(CsvParserService parserService, AnalysisService analysisService) {
         this.parserService = parserService;
         this.analysisService = analysisService;
@@ -43,7 +45,7 @@ public class WebController {
         Locale locale = RequestContextUtils.getLocale(request);
         logger.info("Incoming GET / request with lang param: {}", request.getParameter("lang"));
         logger.info("Current request locale: {}", locale);
-        return "index";
+        return FRONT_PAGE;
     }
 
     @PostMapping("/upload")
@@ -52,7 +54,7 @@ public class WebController {
                            Model model) {
         if (csvFile == null || csvFile.isEmpty()) {
             model.addAttribute("error", "No file selected. Please input a valid CSV file to upload.");
-            return "index";
+            return FRONT_PAGE;
         }
 
         try {
@@ -92,20 +94,20 @@ public class WebController {
             model.addAttribute("error", "Failed to read the uploaded file.");
         }
 
-        return "index";
+        return FRONT_PAGE;
     }
 
     @PostMapping("/analyze")
     public String runAnalysis(@RequestParam("selectedTestType") TestType selectedTestType, Model model) {
         if (lastUploadedProject == null || lastInitialAnalysisResult == null) {
             model.addAttribute("error", "No uploaded project available for analysis.");
-            return "index";
+            return FRONT_PAGE;
         }
 
         lastUploadedProject.setSelectedTestType(selectedTestType);
         model.addAttribute("project", lastUploadedProject);
         model.addAttribute("analysis", lastInitialAnalysisResult);
-        return "index";
+        return FRONT_PAGE;
     }
 
     @PostMapping("/analyze/significance")
@@ -114,7 +116,7 @@ public class WebController {
                                       Model model) {
         if (lastUploadedProject == null || lastInitialAnalysisResult == null) {
             model.addAttribute("error", "No uploaded project available for analysis.");
-            return "index";
+            return FRONT_PAGE;
         }
 
         lastUploadedProject.setSelectedTestType(selectedTestType);
@@ -126,6 +128,6 @@ public class WebController {
         model.addAttribute("analysis", lastInitialAnalysisResult);
         model.addAttribute("testResult", lastTestResult);
 
-        return "index";
+        return FRONT_PAGE;
     }
 }
