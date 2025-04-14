@@ -106,13 +106,17 @@ public class WebController {
     }
 
     @PostMapping("/analyze/significance")
-    public String runSignificanceTest(@RequestParam("selectedTestType") TestType selectedTestType, Model model) {
+    public String runSignificanceTest(@RequestParam("selectedTestType") TestType selectedTestType,
+                                      @RequestParam(value = "paired", required = false) String paired,
+                                      Model model) {
         if (lastUploadedProject == null || lastInitialAnalysisResult == null) {
             model.addAttribute("error", "No uploaded project available for analysis.");
             return "index";
         }
 
         lastUploadedProject.setSelectedTestType(selectedTestType);
+        lastUploadedProject.setPaired("true".equalsIgnoreCase(paired));
+
         lastTestResult = analysisService.runTest(lastUploadedProject, lastInitialAnalysisResult);
 
         model.addAttribute("project", lastUploadedProject);
