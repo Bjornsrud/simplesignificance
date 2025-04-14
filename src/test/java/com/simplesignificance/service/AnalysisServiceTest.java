@@ -226,6 +226,29 @@ class AnalysisServiceTest {
         assertTrue(pairedTTestRecommended, "Expected Paired T-Test to be recommended");
     }
 
+    @Test
+    void testAnalyzeRecommendsWilcoxonWhenPairedAndNotNormal() {
+        // Ikke-normalfordelte data (konstant fordeling gir skjevhet og lav kurtose)
+        List<Double> g1 = Collections.nCopies(20, 10.0);  // Flat, null varians
+        List<Double> g2 = Collections.nCopies(20, 12.0);  // Flat, null varians
+
+        Map<String, List<Double>> data = new HashMap<>();
+        data.put("Before", g1);
+        data.put("After", g2);
+
+        ProjectData project = new ProjectData();
+        project.setProjectTitle("Paired Non-Normal");
+        project.setGroupData(data);
+        project.setPaired(true);
+
+        InitialAnalysisResult result = analysisService.analyze(project);
+
+        boolean wilcoxonRecommended = result.recommendations().stream()
+                .anyMatch(r -> r.testType() == TestType.WILCOXON && r.recommended());
+
+        assertTrue(wilcoxonRecommended, "Expected Wilcoxon to be recommended");
+    }
+
     private List<Double> generateSequence(double start, double end, int count) {
         List<Double> list = new ArrayList<>();
         double step = (end - start) / (count - 1);
