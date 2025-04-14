@@ -47,7 +47,9 @@ public class WebController {
     }
 
     @PostMapping("/upload")
-    public String getInput(@RequestParam("csvFile") MultipartFile csvFile, Model model) {
+    public String getInput(@RequestParam("csvFile") MultipartFile csvFile,
+                           @RequestParam(value = "paired", required = false) String paired,
+                           Model model) {
         if (csvFile == null || csvFile.isEmpty()) {
             model.addAttribute("error", "No file selected. Please input a valid CSV file to upload.");
             return "index";
@@ -55,6 +57,7 @@ public class WebController {
 
         try {
             ProjectData project = parserService.parse(csvFile);
+            project.setPaired("true".equalsIgnoreCase(paired));
 
             logger.info("=== Parsed project data from file: {} ===", csvFile.getOriginalFilename());
             logger.info("Project title: {}", project.getProjectTitle());
