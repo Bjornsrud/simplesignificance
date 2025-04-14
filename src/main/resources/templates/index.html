@@ -30,10 +30,12 @@
         <h2 th:text="#{section.about}">About significance testing</h2>
         <div class="tab-buttons">
             <button class="tab-link active" onclick="openTab(event, 'hypothesis')" th:text="#{tab.hypothesis}">What is hypothesis testing?</button>
+            <button class="tab-link" onclick="openTab(event, 'basics')" th:text="#{help.tab.basics}">Basics of Hypothesis Testing</button>
             <button class="tab-link" onclick="openTab(event, 'tests')" th:text="#{tab.tests}">Common significance tests</button>
             <button class="tab-link" onclick="openTab(event, 'csv')" th:text="#{tab.csv}">CSV format</button>
         </div>
         <div id="hypothesis" class="tab-content active" th:utext="#{help.hypothesis.description}"></div>
+        <div id="basics" class="tab-content" th:text="#{help.tab.basics.description}"></div>
         <div id="tests" class="tab-content" th:utext="#{help.tests.description}"></div>
         <div id="csv" class="tab-content" th:utext="#{help.csv.description}"></div>
     </div>
