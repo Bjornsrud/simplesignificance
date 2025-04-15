@@ -19,7 +19,6 @@ The app helps you compare group differences using statistical significance tests
 - Displays p-values, effect size, skewness, and a plain-language summary
 - Session-based language switching (English and Norwegian)
 - Clean, responsive frontend with Thymeleaf and CSS
-- Logs to both file and console (via Logback)
 
 
 ![projectData](https://github.com/user-attachments/assets/2bd20fc3-90ac-4c93-b52b-7a4667695aeb)
