@@ -21,6 +21,11 @@ The app helps you compare group differences using statistical significance tests
 - Clean, responsive frontend with Thymeleaf and CSS
 - Logs to both file and console (via Logback)
 
+
+![projectData](https://github.com/user-attachments/assets/2bd20fc3-90ac-4c93-b52b-7a4667695aeb)
+![SignificanceTestReport](https://github.com/user-attachments/assets/d560db5a-d66d-47a7-a5e8-7e99888f9b8e)
+![GuideSection](https://github.com/user-attachments/assets/37ad11ff-a8ad-4ba5-b470-f9d048a960e3)
+
 ---
 
 ## Requirements
