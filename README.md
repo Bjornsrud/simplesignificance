@@ -2,7 +2,7 @@
 
 **Simple, guided hypothesis testing.**
 
-Simple Significance is a lightweight statistics web application built with Spring Boot and Java. It is a free, web-based tool for exploratory hypothesis testing — designed for students, teachers, and anyone curious about basic data analysis.
+Simple Significance is a lightweight statistics web application built with Spring Boot and Java. It is a free, web-based tool for exploratory hypothesis testing — designed for anyone curious about basic data analysis, but most of all, for me to learn a bit more about statistics after not having thouched the subject at all since My Master Thesis project. :)
 
 The app helps you compare group differences using statistical significance tests – without requiring advanced prior knowledge of statistics.
 
